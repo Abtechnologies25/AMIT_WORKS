@@ -1,0 +1,27 @@
+{% extends "logins/base.html" %}
+{% block content %}
+<h2 class="mt-5 text-center" style="text-transform: uppercase;">Nagercoil Incharge Dashboard</h2>
+
+<center>
+<div class="d-flex justify-content-center flex-column gap-4 mt-5">
+  
+    <a href="{% url 'registration_work' branch %}">
+        <div class="box text-light bg-primary">REGISTRATION WORK</div>
+    </a>
+    <a href="{% url 'select_work_type' branch %}">
+        <div class="box text-light bg-primary">BILLWISE WORK</div>
+    </a>
+   
+</div>
+</center>
+
+{% endblock %} 
+
+
+    
+
+    
+
+
+
+

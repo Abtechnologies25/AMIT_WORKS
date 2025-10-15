@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title> AMIT</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Particles.js -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      /* font-family: 'Inter', sans-serif; */
+      color: #f1f5f9;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      position: relative;
+      background-image:
+        linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.8)),
+        url("{% static 'images/bg.jpg' %}");
+      background-size: cover;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      /* background-position: center; */
+      z-index: 1;
+    }
+h2{
+    
+    word-spacing: 5px;
+    letter-spacing: 1px;
+    font-weight: 900 !important;
+}
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      top: 0;
+      left: 0;
+    }
+
+    /* nav {
+      background-color: #264a69;
+      z-index: 2;
+      position: relative;
+    } */
+
+    .box {
+      width: 300px;
+      height: 100px;
+      padding: 20px;
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-weight: 700;
+      z-index: 2;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    .box:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.03);
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .addmain {
+      width: 500px;
+    }
+
+    .container-fluid, .content-wrapper {
+      z-index: 2;
+      position: relative;
+    }
+        pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-align: left;
+        font-family: 'Inter', sans-serif;
+        /* font-size: 1rem; */
+        margin: 0;
+        padding: 0;
+        line-height: 1.5;
+        color: #212529; /* or any consistent text color */
+    }
+
+    
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .table-rounded {
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+    }
+
+    .table-rounded thead th:first-child {
+        border-top-left-radius: 12px;
+    }
+
+    .table-rounded thead th:last-child {
+        border-top-right-radius: 12px;
+    }
+
+    .table-rounded tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 12px;
+    }
+
+    .table-rounded tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 12px;
+    }
+
+    .table th {
+        vertical-align: middle !important;
+        background-color: #3e4449;
+        color: #fff;
+    }
+
+    .btn-primary {
+        background-color: #0157ad;
+        border-color: #0066cc;
+    }
+
+    .btn-primary:hover {
+        background-color: #004c99;
+        border-color: #004c99;
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .btn-success:hover {
+        background-color: #146c43;
+        border-color: #146c43;
+    }
+
+    select, label {
+        margin-right: 10px;
+    }
+
+    select {
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    form select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 4px #007bff88;
+    }
+
+    .table-actions a {
+        margin: 2px;
+    }
+
+    .branch-overlay {
+  display: none; 
+  position: fixed;
+  z-index: 3000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+}
+
+.branch-box {
+  background: #ffffff;
+  color: #000;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  position: relative;
+}
+
+.branch-close {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+}
+
+.custom-navbar {
+  background: linear-gradient(90deg, #001f3f, #005f73, #0a9396);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  border-radius: 0 0 20px 20px;
+}
+
+/* Brand styling */
+.navbar-brand {
+  letter-spacing: 1.5px;
+  font-size: 1.2rem;
+  color: #fefefe !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4);
+  transition: 0.3s;
+}
+
+.navbar-brand:hover {
+  color: #fdd835 !important;
+  text-shadow: 0 0 15px #fdd835;
+}
+
+
+/* User info boxes */
+.user-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+  transition: all 0.3s ease-in-out;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+}
+
+.user-box:hover {
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+}
+
+/* Buttons */
+.nav-btn {
+  border-radius: 25px;
+  padding: 6px 14px;
+  font-weight: 600;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255,255,255,0.4);
+}
+
+/* Navbar toggler */
+.navbar-toggler {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.navbar-toggler:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+
+  </style>
+</head>
+<body>
+  <!-- Particle Background -->
+  <div id="particles-js"></div>
+
+  {% if user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar px-4 py-3">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold text-uppercase" href="#">
+      <i class="fa-solid fa-gear me-2"></i>AMIT
+    </a>
+
+    <!-- Mobile Toggle -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Content -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+      <ul class="navbar-nav align-items-center gap-3">
+
+        <!-- User Info Boxes -->
+        <li class="nav-item user-box">
+          <i class="fa-solid fa-id-card me-1"></i> <strong>ID:</strong> {{ user.username }}
+        </li>
+
+        {% if not user.is_superuser %}
+        <li class="nav-item user-box">
+          <i class="fa-solid fa-user me-1"></i> <strong>Name:</strong> {{ user.employee_name }}
+        </li>
+        <li class="nav-item user-box">
+          <i class="fa-solid fa-building me-1"></i> <strong>Branch:</strong> {{ user.branch }}
+        </li>
+        <li class="nav-item user-box">
+          <i class="fa-solid fa-briefcase me-1"></i> <strong>Dept:</strong> {{ user.department }}
+        </li>
+        {% endif %}
+
+        <!-- Buttons -->
+        <li class="nav-item">
+          <a href="{% url 'dashboard' %}" class="btn nav-btn btn-outline-light btn-sm">
+            <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'logout' %}" class="btn nav-btn btn-danger btn-sm">
+            <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+  <div class="container-fluid content-wrapper mt-4">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Disable Inspect -->
+  <script>
+    document.oncontextmenu = () => false;
+    document.onkeydown = e => {
+      if (e.key == "F12" || (e.ctrlKey && e.key == "u")) return false;
+    };
+  </script>
+
+  <!-- Particle.js Init -->
+  <script>
+    particlesJS("particles-js", {
+      "particles": {
+        "number": { "value": 50 },
+        "color": { "value": ["#ffffff", "#a2d2ff", "#c084fc"] },
+        "shape": { "type": "circle" },
+        "opacity": { "value": 0.6, "random": true },
+        "size": { "value": 4, "random": true },
+        "line_linked": {
+          "enable": true,
+          "distance": 120,
+          "color": "#ffffff",
+          "opacity": 0.3,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 1.2,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "bounce": false
+        }
+      },
+      "interactivity": {
+        "events": {
+          "onhover": { "enable": true, "mode": "repulse" },
+          "onclick": { "enable": true, "mode": "push" }
+        },
+        "modes": {
+          "repulse": { "distance": 100 },
+          "push": { "particles_nb": 4 }
+        }
+      },
+      "retina_detect": true
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h3 style="font-weight: 900;" class="text-center mb-4 text-uppercase">Branch list</h3>
+    <center>
+    <div class="d-flex  flex-column">
+        {% for branch in branches %}
+        
+            <a href="{% url 'workstatus_department_list' branch %}"><div class="box text-light bg-primary mt-2">{{ branch }}</div></a>
+        
+        {% endfor %}
+    </div>
+    </center>
+</div>
+{% endblock %}

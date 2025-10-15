@@ -1,0 +1,20 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+
+<h2 class="mt-5 text-center text-uppercase" style="font-weight: 900 !important;">Employee Dashboard - {{ branch }}</h2>
+   <br>  <br>   
+
+    <div class="d-flex justify-content-center align-items-center flex-wrap gap-5 mt-5" >
+        <a href="{% url 'work_status_group_list' %}" class="btn  btn-upload">
+             <div class="box text-light bg-primary">UPLOAD WORK STATUS</div>
+        </a>
+
+     {% if request.user.is_team_leader %}
+        <a href="{% url 'workstatus_branch_list' %}" class="btn  text-light">
+            <div class="box text-light bg-primary">TEAM MEMBERS WORK STATUS</div>
+        </a>
+    {% endif %}
+    
+</div>
+
+{% endblock %}

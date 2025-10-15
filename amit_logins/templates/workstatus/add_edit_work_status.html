@@ -1,0 +1,26 @@
+{% extends 'logins/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="container mt-5">
+    <center>
+    <h2 class="text-center mt-5 text-uppercase" style="font-weight:900">{{ action }} Work Entry</h2>
+<div class=" addmain mt-5">
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {% render_field field class="form-control" %}
+                {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary text-uppercase">{{ action }}</button>
+        <a href="{% url 'work_status_group_list' %}" class="btn btn-secondary">BACK</a>
+    </form>
+    </div>
+    </center>
+</div>
+<br><br>
+{% endblock %}

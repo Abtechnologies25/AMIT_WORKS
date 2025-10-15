@@ -1,0 +1,104 @@
+{% extends 'logins/base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h2 class="text-center text-light mt-5" >ADMIN DASHBOARD</h2><br><br>
+   
+
+<div class=" d-flex justify-content-around">
+
+    
+        
+    <div class=" d-flex   flex-column">
+
+        <a href="{% url 'workstatus_branch_list' %}" class="btn  text-light mt-5"><div class="box text-light bg-primary">WORK STATUS DASHBOARD</div></a>
+
+
+    </div>
+
+</div>
+    
+
+<div class="container mt-4">
+    
+    
+    <div class="card mb-4 mt-5">
+        <div class="card-header bg-dark text-white">
+            <h5 class="text-center text-uppercase">User Registrations</h5>
+        </div>
+        <div class="card-body">
+            {% for branch in branches %}
+                <h6 class="mt-4 mb-2 text-uppercase text-center">{{ branch }} Branch</h6>
+                <table class="table table-bordered table-rounded mb-4 text-center mt-3">
+                    <thead class="table-light text-uppercase">
+                        <tr class="">
+                            <th>EMPLOYEE ID</th>
+                            <th>EMPLOYEE NAME</th>
+                            <th>EMAIL</th>
+                            <th>DEPARTMENT</th>
+                            <th>BRANCH</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% with users=user_registrations %}
+                            {% for user in users %}
+                                {% if user.branch == branch %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.employee_name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.department }}</td>
+                                        <td>{{ user.branch }}</td>
+                                        <td>
+                                            {% if user.is_approved %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not user.is_approved %}
+                                                <a href="{% url 'approve_user' user.id %}" class="btn btn-success btn-sm me-1">Approve</a>
+                                            {% endif %}
+                                            <a href="{% url 'edit_user' user.id %}" class="btn btn-warning btn-sm me-1">Edit</a>
+                                            <a href="{% url 'delete_user' user.id %}" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete {{ user.username }}?');">
+                                            Delete
+                                         </a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% empty %}
+                                <tr><td colspan="6" class="text-center">No user registrations for this branch.</td></tr>
+                            {% endfor %}
+                        {% endwith %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+ 
+ <script>
+function openBranchPanel() {
+  document.getElementById('branchPanel').style.display = 'flex';
+}
+function closeBranchPanel() {
+  document.getElementById('branchPanel').style.display = 'none';
+}
+</script>
+
+
+<br><br><br><br>
+</body>
+</html>
+{% endblock %}
