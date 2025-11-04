@@ -369,14 +369,14 @@ def download_work_status_report(request):
     data_font = Font(name="Bookman Old Style")
     ws.row_dimensions[1].height = 60
     ws.row_dimensions[2].height = 30
-    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "ABT_LOGO_BLACK_NO_BG.png")
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
     if os.path.exists(logo_path):
         logo = XLImage(logo_path)
         logo.width, logo.height = 90, 50
         ws.add_image(logo, "A1")
 
     ws.merge_cells('A1:G2')
-    ws['A1'].value = "AB TECHNOLOGIES"
+    ws['A1'].value = "ATHITH MITHRA"
     ws['A1'].font = Font(bold=True, color="FF0000", size=18, name="Bookman Old Style")
     ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 40
