@@ -10,12 +10,43 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #f5f8fc, #e9eef5);
+      font-family: roboto;
       height: 100vh;
+      margin: 0;
+      display: flex;
+    }
+
+    .left-side {
+      flex: 1;
+      background-image:
+        linear-gradient(rgba(8, 11, 19, 0.4), rgba(9, 12, 20, 0.4)),url("{% static 'images/REN1.webp' %}");
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .left-side h1 {
+      font-size: 2.5vw;
+      font-weight: 900;
+      /* background: rgba(0, 0, 0, 0.4); */
+      padding: 6px 20px;
+      border-radius: 10px;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    .right-side {
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
+      background: linear-gradient(135deg, #f5f8fc, #e9eef5);
     }
 
     .login-container {
@@ -42,14 +73,6 @@
       width: 120px;
     }
 
-    .login-title {
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.5rem;
-      color: #1e293b;
-      margin-bottom: 20px;
-    }
-
     .form-control {
       border-radius: 8px;
       border: 1px solid #d1d5db;
@@ -63,15 +86,10 @@
 
     .btn-success {
       width: 100%;
-      /* background-color: #2563eb; */
       border: none;
       border-radius: 8px;
       font-weight: 600;
       padding: 10px;
-    }
-
-    .btn-primary:hover {
-      background-color: #1d4ed8;
     }
 
     .form-text {
@@ -86,47 +104,59 @@
       font-weight: 500;
     }
 
-    .form-text a:hover {
-      text-decoration: underline;
-    }
-
     footer {
       text-align: center;
       color: #6b7280;
       font-size: 0.8rem;
       margin-top: 20px;
     }
+
+    @media (max-width: 992px) {
+      .left-side {
+        display: none;
+      }
+
+      .right-side {
+        flex: 1;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="login-container">
-    <div class="brand-logo">
-      <img src="{% static 'images/logo.png' %}" alt="Logo">
-    </div>
-    <!-- <h2 class="login-title">Welcome Back</h2> -->
+  <div class="left-side">
+    <h1 style="font-size: 3vw;">ATHITH MITHRA </h1>
+    <h1>Industrial Technologies Private Ltd.</h1>
+  </div>
 
-    <form method="POST" novalidate>
-      {% csrf_token %}
-      {% for field in form %}
-      <div class="mb-3">
-        {{ field }}
-        {% if field.errors %}
-        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-        {% endif %}
+  <div class="right-side">
+    <div class="login-container">
+      <div class="brand-logo">
+        <img src="{% static 'images/logo.png' %}" alt="Logo">
       </div>
-      {% endfor %}
 
-      <button type="submit" class="btn btn-success">Login</button>
+      <form method="POST" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
 
-      <p class="form-text mt-3">
-        Don't have an account? <a href="{% url 'register' %}">Register</a>
-      </p>
-    </form>
+        <button type="submit" class="btn btn-success">Login</button>
 
-    <footer>
-      © 2025 AMIT | All Rights Reserved
-    </footer>
+        <p class="form-text mt-3">
+          Don't have an account? <a href="{% url 'register' %}">Register</a>
+        </p>
+      </form>
+
+      <footer>
+        © 2025 AMIT | All Rights Reserved
+      </footer>
+    </div>
   </div>
 </body>
 </html>
