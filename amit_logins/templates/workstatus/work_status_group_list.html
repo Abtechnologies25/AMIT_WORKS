@@ -5,8 +5,6 @@
 
 </style>
 
-
-
 <div class="container-fluid mt-5">
     <h2 class="text-center mb-4" style="font-weight:900">WORK STATUS</h2>
      <center>
@@ -94,11 +92,26 @@
                                     {% endif %}</td>
                                
                                 <td class="text-center align-middle">{{ status.WORK_STATUS }}</td>
-                                <td class="text-center align-middle">
-                                    <a href="{% url 'edit_work_status' status.id %}" class="btn btn-sm btn-info text-light">EDIT</a><br>
-                                    <a href="{% url 'delete_work_status' status.id %}" class="btn btn-sm btn-danger mt-2 "
-                                       onclick="return confirm('Are you sure you want to delete this entry?');">DELETE</a>
-                                </td>
+<td class="text-center">
+  <div class="dropdown">
+    <button class="btn btn-light btn-sm" type="button" id="actionMenu{{ group.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-three-dots-vertical"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionMenu{{ group.id }}">
+      <li>
+        <a class="dropdown-item text-warning" href="{% url 'edit_work_status' status.id %}">
+          <i class="bi bi-pencil-square me-2"></i> Edit
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item text-danger" href="{% url 'delete_work_status' status.id %}" 
+           onclick="return confirm('Are you sure you want to delete this group?');">
+          <i class="bi bi-trash me-2"></i> Delete
+        </a>
+      </li>
+    </ul>
+  </div>
+</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="6" class="text-center">No entries</td></tr>
@@ -109,26 +122,13 @@
                     <a href="{% url 'add_work_status' group.id %}" class="btn btn-sm btn-secondary mt-2">ADD WORK DETAILS</a>
                     </center>
                 </td>
-                <td class="text-center">
-                <div class="dropdown">
-                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionMenu{{ group.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                    Actions
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="actionMenu{{ group.id }}">
-                    <li>
-                        <a class="dropdown-item text-warning" href="{% url 'edit_work_status_group' group.id %}">
-                        <i class="bi bi-pencil-square"></i> Edit
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="{% url 'delete_work_status_group' group.id %}" 
-                        onclick="return confirm('Are you sure you want to delete this group?');">
-                        <i class="bi bi-trash"></i> Delete
-                        </a>
-                    </li>
-                    </ul>
-                </div>
+                
+                <td class="text-center " style="vertical-align: middle;">
+                    <a href="{% url 'edit_work_status_group' group.id %}" class="btn btn-warning btn-sm">EDIT</a><br>
+                    <a href="{% url 'delete_work_status_group' group.id %}" class="btn btn-danger btn-sm mt-2"
+                       onclick="return confirm('Are you sure you want to delete this group?');">DELETE</a>
                 </td>
+                
             </tr>
             {% empty %}
             <tr><td colspan="6" class="text-center">No work status groups found.</td></tr>
