@@ -15,20 +15,25 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #f5f8fc, #e9eef5);
+      background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("{% static 'images/REN1.webp' %}");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      margin: 0;
     }
 
     .register-container {
-      width: 450px;
+      width: 460px;
       background: #fff;
       border-radius: 14px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-      padding: 45px 40px;
+      padding: 40px 35px;
       transition: all 0.3s ease;
+      text-align: center;
     }
 
     .register-container:hover {
@@ -36,20 +41,28 @@
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     }
 
-    .brand-logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-
     .brand-logo img {
       width: 130px;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: #1e293b;
+    }
+
+    h2 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 15px;
     }
 
     .register-title {
-      text-align: center;
       font-weight: 600;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       color: #1e293b;
       margin-bottom: 25px;
     }
@@ -68,16 +81,11 @@
 
     .btn-success {
       width: 100%;
-      /* background-color: #2563eb; */
       border: none;
       border-radius: 8px;
       font-weight: 600;
       padding: 12px;
       margin-top: 8px;
-    }
-
-    .btn-primary:hover {
-      background-color: #1d4ed8;
     }
 
     .toggle-password {
@@ -116,15 +124,17 @@
 
 <body>
   <div class="register-container">
+    
     <div class="brand-logo">
       <img src="{% static 'images/logo.png' %}" alt="Logo">
     </div>
+    
     <h2 class="register-title">Create Your Account</h2>
 
     <form method="post" novalidate>
       {% csrf_token %}
 
-      <!-- Full-width Employee ID -->
+      <!-- Employee ID -->
       <div class="mb-3">
         {% for field in form %}
           {% if field.name == "username" %}
@@ -138,59 +148,52 @@
         {% endfor %}
       </div>
 
-      <!-- Two-column layout for other fields -->
-     <!-- Two-column layout for other fields -->
-<div class="row">
-  <!-- Right column now becomes left -->
-  <div class="col-md-6">
-    {% for field in form %}
-      {% if field.name != "username" %}
-        {% if not forloop.counter|add:"-1"|divisibleby:2 %}
-        <div class="mb-3 position-relative">
-          {% if field.name == "password1" or field.name == "password2" %}
-          <div class="position-relative">
-            {{ field }}
-            <span class="toggle-password" onclick="togglePassword('{{ field.id_for_label }}', this)">
-              <i class="fa fa-eye-slash"></i>
-            </span>
-          </div>
-          {% else %}
-          {{ field }}
-          {% endif %}
-          {% if field.errors %}
-          <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-          {% endif %}
+      <!-- Two-column field layout -->
+      <div class="row">
+        <div class="col-md-6">
+          {% for field in form %}
+            {% if field.name != "username" and forloop.counter|divisibleby:2 %}
+            <div class="mb-3 position-relative">
+              {% if field.name == "password1" or field.name == "password2" %}
+              <div class="position-relative">
+                {{ field }}
+                <span class="toggle-password" onclick="togglePassword('{{ field.id_for_label }}', this)">
+                  <i class="fa fa-eye-slash"></i>
+                </span>
+              </div>
+              {% else %}
+              {{ field }}
+              {% endif %}
+              {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+              {% endif %}
+            </div>
+            {% endif %}
+          {% endfor %}
         </div>
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-  </div>
 
-  <!-- Left column now becomes right -->
-  <div class="col-md-6">
-    {% for field in form %}
-      {% if field.name != "username" %}
-        {% if forloop.counter|add:"-1"|divisibleby:2 %}
-        <div class="mb-3 position-relative">
-          {% if field.name == "password1" or field.name == "password2" %}
-          <div class="position-relative">
-            {{ field }}
-            <span class="toggle-password" onclick="togglePassword('{{ field.id_for_label }}', this)">
-              <i class="fa fa-eye-slash"></i>
-            </span>
-          </div>
-          {% else %}
-          {{ field }}
-          {% endif %}
-          {% if field.errors %}
-          <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-          {% endif %}
+        <div class="col-md-6">
+          {% for field in form %}
+            {% if field.name != "username" and not forloop.counter|divisibleby:2 %}
+            <div class="mb-3 position-relative">
+              {% if field.name == "password1" or field.name == "password2" %}
+              <div class="position-relative">
+                {{ field }}
+                <span class="toggle-password" onclick="togglePassword('{{ field.id_for_label }}', this)">
+                  <i class="fa fa-eye-slash"></i>
+                </span>
+              </div>
+              {% else %}
+              {{ field }}
+              {% endif %}
+              {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+              {% endif %}
+            </div>
+            {% endif %}
+          {% endfor %}
         </div>
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-  </div>
-</div>
+      </div>
 
       <button type="submit" class="btn btn-success">Register</button>
 

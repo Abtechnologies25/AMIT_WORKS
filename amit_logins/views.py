@@ -132,14 +132,12 @@ def user_logout(request):
 
 def admin_dashboard(request):
     user_registrations = User.objects.all().order_by('username')
-    BRANCHES = ['NAGERCOIL', 'TIRUNELVELI', 'PUDUKOTTAI', 'CHENNAI']
+    BRANCHES = ['NAGERCOIL']
     work_status_records = WorkStatus.objects.all()
     DEPARTMENT_CHOICES = [
-    'journal team',
-    'Research work development team',
-    'software project development team',
+    
     'hardware project development team',
-    'Technical team',
+    
     'Admin team',
 ]
     context = {
@@ -151,18 +149,18 @@ def admin_dashboard(request):
 
 @login_required(login_url='login')
 def workstatus_branch_list(request):
-    branches = ['NAGERCOIL', 'TIRUNELVELI', 'PUDUKOTTAI', 'CHENNAI']
+    branches = ['NAGERCOIL']
     return render(request, 'workstatus/branch_list.html', {'branches': branches})
 @login_required(login_url='login')
 def workstatus_department_list(request, branch):
     user = request.user
 
     all_departments = [
-        'JOURNAL TEAM',
-        'RESEARCH WORK DEVELOPMENT TEAM',
-        'SOFTWARE PROJECT DEVELOPMENT TEAM',
+        # 'JOURNAL TEAM',
+        # 'RESEARCH WORK DEVELOPMENT TEAM',
+        # 'SOFTWARE PROJECT DEVELOPMENT TEAM',
         'HARDWARE PROJECT DEVELOPMENT TEAM',
-        'TECHNICAL TEAM',
+        # 'TECHNICAL TEAM',
         'ADMIN TEAM',
     ]
 
