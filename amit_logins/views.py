@@ -107,14 +107,14 @@ def edit_user(request, user_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def dashboard(request):
     if request.user.is_superuser:   
-        # login_time = localtime(now()).strftime('%Y-%m-%d %I:%M:%S %p')        
-        # send_mail(
-        #     subject='Superuser Login Notification',
-        #     message=f"Superuser {request.user.username} logged in at {login_time}.",
-        #     from_email=settings.DEFAULT_FROM_EMAIL,
-        #     recipient_list=['abtechchennai@gmail.com'],  
-        #     fail_silently=False,
-        # )
+        login_time = localtime(now()).strftime('%Y-%m-%d %I:%M:%S %p')        
+        send_mail(
+            subject='AMIT ADMIN Login Notification',
+            message=f"Superuser {request.user.username} logged in at {login_time}.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=['abtechchennai@gmail.com'],  
+            fail_silently=False,
+        )
         return redirect('admin_dashboard')      
     context = {
         'branch': request.user.branch,
