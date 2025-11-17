@@ -109,7 +109,7 @@ def dashboard(request):
     if request.user.is_superuser:   
         login_time = localtime(now()).strftime('%Y-%m-%d %I:%M:%S %p')        
         send_mail(
-            subject='AMIT ADMIN Login Notification',
+            subject='ADMIN Login Notification (athithmithra.org)',
             message=f"Superuser {request.user.username} logged in at {login_time}.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['abtechchennai@gmail.com'],  
