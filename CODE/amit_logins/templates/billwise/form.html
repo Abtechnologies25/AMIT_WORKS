@@ -1,0 +1,10 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+<h2>{{ action }} Billwise Payment - {{ branch }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">{{ action }}</button>
+    <a href="{% url 'billwise_payment_report' branch %}" class="btn btn-secondary">Back</a>
+</form>
+{% endblock %}

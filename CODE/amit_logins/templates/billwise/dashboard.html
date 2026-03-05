@@ -1,0 +1,14 @@
+{% extends "logins/base.html" %}
+{% block content %}
+<h2 class="mt-5 text-center text-uppercase" style="font-weight:900">
+    {{ branch }} - {{ work_type|title }} Billwise Payment Dashboard
+</h2>
+<br><br><br>
+<div class="d-flex justify-content-center align-items-center flex-column gap-5">
+    {% for category in categories %}
+        <a href="{% url 'bill_list' branch category %}">
+            <div class="box text-light btn-primary">{{ category|upper }} BILL</div>
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}

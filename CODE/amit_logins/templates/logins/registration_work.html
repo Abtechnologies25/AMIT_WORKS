@@ -1,0 +1,64 @@
+{% extends "logins/base.html" %}
+{% block content %}
+<style>
+  .filter-item {
+    display: none; /* hide all items by default */
+  }
+</style>
+<h2 class="mt-5 text-center" style="font-weight:900;text-transform: uppercase;">REGISTRATION WORK</h2>
+
+<div class="d-flex justify-content-center gap-4 my-4">
+    <!-- <button class="btn btn-outline-dark filter-btn" data-filter="all">All</button> -->
+    <button class="btn btn-outline-light filter-btn" data-filter="admin">ADMIN WORK UPDATE</button>
+    <button class="btn btn-outline-light filter-btn" data-filter="project">PROJECT WORK UPDATE</button>
+    <!-- <button class="btn btn-outline-light filter-btn" data-filter="journal">JOURNAL WORK UPDATE</button> -->
+ 
+</div>
+
+<div class="d-flex justify-content-center align-items-center flex-column gap-5 mt-5 mb-5">
+
+    <!-- PHD WORK -->
+
+
+    <!-- PROJECT WORK -->
+    <div class="filter-item" data-category="project">
+        <a href="{% url 'product_registration_report' branch=branch %}">
+            <div class="box text-light btn-primary">PRODUCT REGISTRATION REPORT</div>
+        </a>
+    </div>
+
+    <div class="filter-item" data-category="project">
+        <a href="{% url 'internship_registration_report' branch=branch %}">
+            <div class="box text-light btn-primary">INTERNSHIP REGISTRATION REPORT</div>
+        </a>
+    </div>
+
+    <div class="filter-item" data-category="admin">
+        <a href="{% url 'payment_voucher_report' branch=branch %}">
+            <div class="box text-light btn-primary">PAYMENT VOUCHER</div>
+        </a>
+    </div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll('.filter-btn');
+    const items = document.querySelectorAll('.filter-item');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const filter = button.getAttribute('data-filter');
+
+            items.forEach(item => {
+                if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+
+{% endblock %}

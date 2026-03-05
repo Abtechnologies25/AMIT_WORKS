@@ -1,0 +1,25 @@
+{% extends "logins/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<h2 class="text-center mt-5" style="font-weight:900;text-transform: uppercase;">Edit Project Registration - {{ branch }}</h2>
+<center>
+    <div class=" addmain mt-5">
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {% render_field field class="form-control" %}
+                {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+    <button type="submit" class="btn btn-success">Update</button>
+    <a href="{% url 'project_registration_report' branch %}" class="btn btn-secondary">Cancel</a>
+</form>
+</div>
+</center>
+<br><br><br>
+{% endblock %}

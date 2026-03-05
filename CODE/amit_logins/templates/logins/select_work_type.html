@@ -1,0 +1,14 @@
+{% extends "logins/base.html" %}
+{% block content %}
+
+<h2 class="text-center mt-5 text-uppercase" style="font-weight:900">{{ branch }} - Select Bill Category</h2>
+<center>
+<div class="d-flex justify-content-center flex-column  gap-4 mt-5">
+
+    <a href="{% url 'billwise_dashboard' branch=branch work_type='product' %}">
+        <div class="box text-light btn-primary">PRODUCT WORK</div>
+    </a>
+
+</div>
+</center>
+{% endblock %}

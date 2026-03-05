@@ -1,0 +1,24 @@
+{% extends "logins/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<h2 class="text-center mt-5 text-uppercase" style="font-weight:900">{{ action }} {{ bill_type }} Bill - {{ branch }}</h2>
+<center>
+<div class=" addmain mt-5">
+<form method="post">
+    {% csrf_token %}
+    
+    {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {% render_field field class="form-control" %}
+                {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    <button type="submit" class="btn btn-success">{{ action }}</button>
+</form>
+</div>
+</center>
+<br><br><br>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+<div class="container-fluid">
+<h2 class="text-center mt-5 text-uppercase" style="font-weight:900">Payment Voucher Report - {{ branch }}</h2>
+
+
+<!-- <a href="{% url 'dashboard' %}" class="btn btn-secondary">Dashboard</a> -->
+
+<!-- Download Report Form -->
+<center>
+<div class="mt-5">
+<form method="GET" action="{% url 'download_payment_voucher_report' branch %}">
+    <label for="month" class="text-uppercase">Select Month:</label>
+    <select id="month" name="month" required>
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+    </select>
+
+    <label for="year" class="text-uppercase">Select Year:</label>
+    <select name="year" id="year" required>
+        <option value="">--Select--</option>
+        {% for y in years %}
+            <option value="{{ y }}">{{ y }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-success">DOWNLOAD EXCEL</button>
+    <a href="{% url 'add_payment_voucher' branch=branch %}" class="btn btn-primary">ADD NEW ENTRY</a>
+</form>
+</div>
+</center>
+
+<!-- Table Displaying Payment Voucher Records -->
+<table class="table table-bordered table-rounded mt-5 text-center">
+    <thead>
+        <tr class="">
+            <th>S.NO</th>
+            <th>DATE</th>
+            <th>VC No</th>
+            <th>PURPOSE</th>
+            <th>ONLINE</th>
+            <th>CASH</th>
+            <th>ACTIONS</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.S_NO }}</td>
+            <td>{{ record.DATE|date:"d/m/Y" }}</td>
+            <td>{{ record.VC_NO }}</td>
+            <td style="text-align: left;">{{ record.PURPOSE }}</td>
+            <td>{{ record.ONLINE_PAYMENT }}</td>
+            <td>{{ record.CASH_PAYMENT }}</td>
+            <td>
+                <a href="{% url 'edit_payment_voucher' branch=branch record_id=record.id %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'delete_payment_voucher' branch=branch record_id=record.id %}"
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Are you sure you want to delete this payment voucher?');">
+                Delete
+             </a>
+             
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="text-center">No records found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
