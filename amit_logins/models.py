@@ -219,7 +219,8 @@ PAYMENT_STATUS_CHOICES = [
     ('25% PAID', '25% PAID'),
     ('50% PAID', '50% PAID'),
     ('75% PAID', '75% PAID'),
-    ('FULLY PAID', 'FULLY PAID'),    
+    ('FULLY PAID', 'FULLY PAID'),
+    ('CANCELLED', 'CANCELLED')    
 ]
 
 class AbstractBill(models.Model):
