@@ -458,7 +458,7 @@ def download_work_status_report(request):
 
     thin = Side(border_style="thin", color="000000")
     border = Border(top=thin, left=thin, right=thin, bottom=thin)
-    data_font = Font(name="Bookman Old Style")
+    data_font = Font(name="Times New Roman")
     ws.row_dimensions[1].height = 60
     ws.row_dimensions[2].height = 30
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
@@ -469,35 +469,35 @@ def download_work_status_report(request):
 
     ws.merge_cells('A1:G2')
     ws['A1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
-    ws['A1'].font = Font(bold=True, color="FF0000", size=18, name="Bookman Old Style")
+    ws['A1'].font = Font(bold=True, color="FF0000", size=18, name="Times New Roman")
     ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 40
 
     ws.merge_cells('A3:B3')
     ws['A3'] = "NAME"
-    ws['A3'].font = Font(bold=True, name="Bookman Old Style")
+    ws['A3'].font = Font(bold=True, name="Times New Roman")
     ws.merge_cells('C3:D3')
     ws['C3'] = getattr(request.user, 'employee_name', '')
-    ws['C3'].font = Font(bold=True, name="Bookman Old Style")
+    ws['C3'].font = Font(bold=True, name="Times New Roman")
 
     ws.merge_cells('A4:B4')
     ws['A4'] = "EMPLOYEE ID"
-    ws['A4'].font = Font(bold=True, name="Bookman Old Style")
+    ws['A4'].font = Font(bold=True, name="Times New Roman")
     ws.merge_cells('C4:D4')
     ws['C4'] = request.user.username
-    ws['C4'].font = Font(bold=True, name="Bookman Old Style")
+    ws['C4'].font = Font(bold=True, name="Times New Roman")
 
     ws['E3'] = "BRANCH"
-    ws['E3'].font = Font(bold=True, name="Bookman Old Style")
+    ws['E3'].font = Font(bold=True, name="Times New Roman")
     ws.merge_cells('F3:G3')
     ws['F3'] = getattr(request.user, 'branch', '')
-    ws['F3'].font = Font(bold=True, name="Bookman Old Style")
+    ws['F3'].font = Font(bold=True, name="Times New Roman")
 
     ws['E4'] = "DEPARTMENT"
-    ws['E4'].font = Font(bold=True, name="Bookman Old Style")
+    ws['E4'].font = Font(bold=True, name="Times New Roman")
     ws.merge_cells('F4:G4')
     ws['F4'] = getattr(request.user, 'department', '')
-    ws['F4'].font = Font(bold=True, name="Bookman Old Style")
+    ws['F4'].font = Font(bold=True, name="Times New Roman")
     for row in range(3, 5):
         for col in range(1, 8):
             ws.cell(row=row, column=col).border = border
@@ -513,7 +513,7 @@ def download_work_status_report(request):
 
     for cell_ref in ['A5', 'B5', 'C5']:
         cell = ws[cell_ref]
-        cell.font = Font(bold=True, name="Bookman Old Style")
+        cell.font = Font(bold=True, name="Times New Roman")
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.fill = PatternFill(start_color="B7DEE8", end_color="B7DEE8", fill_type="solid")
         cell.border = border
@@ -521,7 +521,7 @@ def download_work_status_report(request):
     sub_headers = ["WORK CODE", "WORK DETAILS", "STARTING DATE", "ENDING DATE", "STATUS"]
     for idx, header in enumerate(sub_headers, start=3):
         cell = ws.cell(row=6, column=idx, value=header)
-        cell.font = Font(bold=True, name="Bookman Old Style")
+        cell.font = Font(bold=True, name="Times New Roman")
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.fill = PatternFill(start_color="B7DEE8", end_color="B7DEE8", fill_type="solid")
         cell.border = border
@@ -726,10 +726,10 @@ def download_report_payment_voucher(request, model, branch, filename):
     # === Styles ===
     thin = Side(border_style="thin", color="000000")
     border = Border(top=thin, left=thin, right=thin, bottom=thin)
-    title_font = Font(bold=True, name="Bookman Old Style", size=18)
-    header_font = Font(bold=True, name="Bookman Old Style", size=11)
-    data_font = Font(name="Bookman Old Style", size=10)
-    data_font_bold = Font(bold=True, name="Bookman Old Style", size=11)
+    title_font = Font(bold=True, name="Times New Roman", size=18)
+    header_font = Font(bold=True, name="Times New Roman", size=15)
+    data_font = Font(name="Times New Roman", size=15)
+    data_font_bold = Font(bold=True, name="Times New Roman", size=15)
     header_fill = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
     center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
     left_align = Alignment(horizontal="left", vertical="center", wrap_text=True)
@@ -751,7 +751,7 @@ def download_report_payment_voucher(request, model, branch, filename):
     ws.merge_cells('C1:G2')
     ws['C1'].value = "ATHITH MITHRA INDUSTRIAL PVT LTD"; ws['C1'].font = title_font; ws['C1'].alignment = center_align
     ws.merge_cells('C3:G4')
-    ws['C3'].value = "PAYMENT VOUCHER DETAILS"; ws['C3'].font = Font(bold=True, name="Bookman Old Style", size=14); ws['C3'].alignment = center_align
+    ws['C3'].value = "PAYMENT VOUCHER DETAILS"; ws['C3'].font = Font(bold=True, name="Times New Roman", size=14); ws['C3'].alignment = center_align
     ws.merge_cells('A5:G5')
     year_month_text = f"YEAR/MONTH: {year}/{m_name}"
     branch_text = f"BRANCH : {branch.upper()}"
@@ -818,7 +818,7 @@ def download_report_payment_voucher(request, model, branch, filename):
     current_row += 1
 
     # Row: SIGNATURE LABELS
-    ws.row_dimensions[current_row].height = 25
+    ws.row_dimensions[current_row].height = 35
     ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=3)
     ws.cell(row=current_row, column=1, value="PREPARED BY").font = data_font_bold
     ws.merge_cells(start_row=current_row, start_column=4, end_row=current_row, end_column=5)
@@ -837,7 +837,7 @@ def download_report_payment_voucher(request, model, branch, filename):
     current_row += 1
 
     # === COLUMN WIDTHS ===
-    col_widths = [8, 14, 23, 80, 20, 18, 18]
+    col_widths = [8, 14, 23, 80, 20, 22, 22]
     for i, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 
@@ -1084,8 +1084,8 @@ def download_report(request, model, branch, filename):
     # === Styles ===
     thin = Side(border_style="thin", color="000000")
     border = Border(top=thin, left=thin, right=thin, bottom=thin)
-    header_font = Font(bold=True, name="Bookman Old Style", size=12)
-    data_font = Font(name="Bookman Old Style", size=11)
+    header_font = Font(bold=True, name="Times New Roman", size=15)
+    data_font = Font(name="Times New Roman", size=15)
 
     # === LOGO + TITLE ===
     ws.row_dimensions[1].height = 62
@@ -1105,13 +1105,13 @@ def download_report(request, model, branch, filename):
     # Title (C1:M1)
     ws.merge_cells('C1:M1')
     ws['C1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
-    ws['C1'].font = Font(bold=True, color="FF0000", size=28, name="Bookman Old Style")
+    ws['C1'].font = Font(bold=True, color="FF0000", size=28, name="Times New Roman")
     ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
 
     # Branch (C2:E2)
     ws.merge_cells('C2:E2')
     ws['C2'].value = f"BRANCH- {branch}"
-    ws['C2'].font = Font(bold=True, color="FF0000", size=18, name="Bookman Old Style")
+    ws['C2'].font = Font(bold=True, color="FF0000", size=18, name="Times New Roman")
     ws['C2'].alignment = Alignment(horizontal="center", vertical="center")
 
     # Date (C3:E3) - Format: MMM-YY (e.g., Nov-25)
@@ -1120,7 +1120,7 @@ def download_report(request, model, branch, filename):
     
     ws.merge_cells('C3:E3')
     ws['C3'].value = f"{date_str}"
-    ws['C3'].font = Font(bold=True, color="FF0000", size=14, name="Bookman Old Style")
+    ws['C3'].font = Font(bold=True, color="FF0000", size=15, name="Times New Roman")
     ws['C3'].alignment = Alignment(horizontal="center", vertical="center")
 
     # Report Details (G2:M3)
@@ -1139,14 +1139,14 @@ def download_report(request, model, branch, filename):
         start_year = year_int - 1
         end_year = year_int
     
-    # Format: AUG'25 TO JULY'26
+    
     academic_year = f"APR'{str(start_year)[-2:]} TO MAR'{str(end_year)[-2:]}"
     record_count = len(data)
     details_text = f"{report_type} DETAILS {academic_year} "
     
     ws.merge_cells('F2:M3')
     ws['F2'].value = details_text
-    ws['F2'].font = Font(bold=True, color="0070C0", size=20, name="Bookman Old Style")
+    ws['F2'].font = Font(bold=True, color="0070C0", size=20, name="Times New Roman")
     ws['F2'].alignment = Alignment(horizontal="center", vertical="center")
     ws['F2'].fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
 
@@ -1224,7 +1224,7 @@ def download_report(request, model, branch, filename):
     # Merge cells A-I for "TOTAL AMOUNT" label
     ws.merge_cells(f'A{total_row}:I{total_row}')
     ws[f'A{total_row}'].value = "TOTAL AMOUNT"
-    ws[f'A{total_row}'].font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws[f'A{total_row}'].font = Font(bold=True, name="Times New Roman", size=15)
     ws[f'A{total_row}'].alignment = Alignment(horizontal="right", vertical="center")
     ws[f'A{total_row}'].border = border
     
@@ -1234,19 +1234,19 @@ def download_report(request, model, branch, filename):
     
     # Total Amount value (Column J)
     ws.cell(row=total_row, column=10, value=total_amount_sum)
-    ws.cell(row=total_row, column=10).font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws.cell(row=total_row, column=10).font = Font(bold=True, name="Times New Roman", size=15)
     ws.cell(row=total_row, column=10).alignment = Alignment(horizontal="right", vertical="center")
     ws.cell(row=total_row, column=10).border = border
     
     # Amount Paid value (Column K)
     ws.cell(row=total_row, column=11, value=amount_paid_sum)
-    ws.cell(row=total_row, column=11).font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws.cell(row=total_row, column=11).font = Font(bold=True, name="Times New Roman", size=15)
     ws.cell(row=total_row, column=11).alignment = Alignment(horizontal="right", vertical="center")
     ws.cell(row=total_row, column=11).border = border
     
     # Amount Balance value (Column L)
     ws.cell(row=total_row, column=12, value=amount_balance_sum)
-    ws.cell(row=total_row, column=12).font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws.cell(row=total_row, column=12).font = Font(bold=True, name="Times New Roman", size=15)
     ws.cell(row=total_row, column=12).alignment = Alignment(horizontal="right", vertical="center")
     ws.cell(row=total_row, column=12).border = border
     
@@ -1263,7 +1263,7 @@ def download_report(request, model, branch, filename):
     # PREPARED BY (columns A-C)
     ws.merge_cells(f'A{footer_row}:C{footer_row}')
     ws[f'A{footer_row}'].value = "PREPARED BY"
-    ws[f'A{footer_row}'].font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws[f'A{footer_row}'].font = Font(bold=True, name="Times New Roman", size=15)
     ws[f'A{footer_row}'].alignment = Alignment(horizontal="center", vertical="center")
     ws[f'A{footer_row}'].border = border
     for col in range(1, 4):
@@ -1272,7 +1272,7 @@ def download_report(request, model, branch, filename):
     # RECHECKED BY (columns D-F)
     ws.merge_cells(f'D{footer_row}:F{footer_row}')
     ws[f'D{footer_row}'].value = "RECHECKED BY"
-    ws[f'D{footer_row}'].font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws[f'D{footer_row}'].font = Font(bold=True, name="Times New Roman", size=15)
     ws[f'D{footer_row}'].alignment = Alignment(horizontal="center", vertical="center")
     ws[f'D{footer_row}'].border = border
     for col in range(4, 7):
@@ -1281,7 +1281,7 @@ def download_report(request, model, branch, filename):
     # APPROVED BY (columns G-J)
     ws.merge_cells(f'G{footer_row}:J{footer_row}')
     ws[f'G{footer_row}'].value = "APPROVED BY"
-    ws[f'G{footer_row}'].font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws[f'G{footer_row}'].font = Font(bold=True, name="Times New Roman", size=15)
     ws[f'G{footer_row}'].alignment = Alignment(horizontal="center", vertical="center")
     ws[f'G{footer_row}'].border = border
     for col in range(7, 11):
@@ -1290,7 +1290,7 @@ def download_report(request, model, branch, filename):
     # VERIFIED BY (columns K-M)
     ws.merge_cells(f'K{footer_row}:M{footer_row}')
     ws[f'K{footer_row}'].value = "VERIFIED BY"
-    ws[f'K{footer_row}'].font = Font(bold=True, name="Bookman Old Style", size=12)
+    ws[f'K{footer_row}'].font = Font(bold=True, name="Times New Roman", size=15)
     ws[f'K{footer_row}'].alignment = Alignment(horizontal="center", vertical="center")
     ws[f'K{footer_row}'].border = border
     for col in range(11, 14):
@@ -1477,15 +1477,15 @@ def export_bills_to_excel(request, branch, bill_type):
     # === Styles ===
     thin = Side(border_style="thin", color="000000")
     border = Border(top=thin, left=thin, right=thin, bottom=thin)
-    header_font = Font(bold=True, name="Bookman Old Style", size=12)
-    data_font = Font(name="Bookman Old Style", size=11)
+    header_font = Font(bold=True, name="Times New Roman", size=15)
+    data_font = Font(name="Times New Roman", size=15)
     
     # Custom Fonts
-    company_font = Font(bold=True, color="FF0000", size=24, name="Bookman Old Style")
-    details_font = Font(bold=True, color="0070C0", size=18, name="Bookman Old Style")
-    branch_font = Font(bold=True, color="00B050", size=14, name="Bookman Old Style")
-    month_year_label_font = Font(bold=True, color="7030A0", size=16, name="Bookman Old Style")
-    month_year_value_font = Font(bold=True, color="C0504D", size=16, name="Bookman Old Style")
+    company_font = Font(bold=True, color="FF0000", size=24, name="Times New Roman")
+    details_font = Font(bold=True, color="0070C0", size=18, name="Times New Roman")
+    branch_font = Font(bold=True, color="00B050", size=14, name="Times New Roman")
+    month_year_label_font = Font(bold=True, color="7030A0", size=16, name="Times New Roman")
+    month_year_value_font = Font(bold=True, color="C0504D", size=16, name="Times New Roman")
 
     # === HEADER LAYOUT ===
     ws.row_dimensions[1].height = 45
@@ -1571,7 +1571,7 @@ def export_bills_to_excel(request, branch, bill_type):
     else:
         first_weekday = 0
 
-    subtotal_font = Font(bold=True, name="Bookman Old Style", size=11)
+    subtotal_font = Font(bold=True, name="Times New Roman", size=15)
     subtotal_fill = PatternFill(start_color="FFFFCC", end_color="FFFFCC", fill_type="solid")  # Light Yellow
 
     for record in queryset:
@@ -1592,13 +1592,13 @@ def export_bills_to_excel(request, branch, bill_type):
                 ws.cell(row=current_row, column=8, value=week_online).font = subtotal_font
                 ws.cell(row=current_row, column=8).alignment = Alignment(horizontal="right", vertical="center")
                 
-                # Apply fill and borders to the subtotal row (A-K)
+               
                 for c in range(1, 12):
                     cell = ws.cell(row=current_row, column=c)
                     cell.fill = subtotal_fill
                     cell.border = border
                 
-                ws.row_dimensions[current_row].height = 20
+                ws.row_dimensions[current_row].height = 50
                 current_row += 1
                 
                 # Reset weekly sums
@@ -1609,7 +1609,7 @@ def export_bills_to_excel(request, branch, bill_type):
             current_week = week_num
             ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=11)
             week_cell = ws.cell(row=current_row, column=1, value=f"--- WEEK {current_week} ---")
-            week_cell.font = Font(bold=True, name="Bookman Old Style", size=12, color="0000FF") # Blue bold
+            week_cell.font = Font(bold=True, name="Times New Roman", size=15, color="0000FF") # Blue bold
             week_cell.alignment = Alignment(horizontal="center", vertical="center")
             week_cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid") # Light gray
             
@@ -1664,7 +1664,7 @@ def export_bills_to_excel(request, branch, bill_type):
             else:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
-        ws.row_dimensions[current_row].height = 20
+        ws.row_dimensions[current_row].height = 35
         current_row += 1
 
     # Insert Subtotal for the LAST week
@@ -1702,7 +1702,7 @@ def export_bills_to_excel(request, branch, bill_type):
     for label, start_col, end_col in footer_configs:
         ws.merge_cells(start_row=footer_row, start_column=start_col, end_row=footer_row, end_column=end_col)
         cell = ws.cell(row=footer_row, column=start_col, value=label)
-        cell.font = Font(bold=True, name="Bookman Old Style", size=12)
+        cell.font = Font(bold=True, name="Times New Roman", size=15)
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
         
@@ -1725,7 +1725,7 @@ def export_bills_to_excel(request, branch, bill_type):
     ws.row_dimensions[signature_row].height = 45
 
     # === COLUMN WIDTHS ===
-    col_widths = [8, 15, 18, 25, 45, 18, 18, 18, 25, 18, 22]
+    col_widths = [8, 15, 18, 25, 45, 22, 18, 18, 30, 18, 22]
     for i, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 
