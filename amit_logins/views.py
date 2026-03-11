@@ -468,7 +468,7 @@ def download_work_status_report(request):
         ws.add_image(logo, "A1")
 
     ws.merge_cells('A1:G2')
-    ws['A1'].value = "ATHITH MITHRA INDUSTRIAL PVT LTD"
+    ws['A1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
     ws['A1'].font = Font(bold=True, color="FF0000", size=18, name="Bookman Old Style")
     ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 40
@@ -1044,7 +1044,7 @@ def download_report(request, model, branch, filename):
             record.REG_CODE,
             record.NAME,
             record.DEPARTMENT,
-            getattr(record, 'PHD_TYPE', '') or getattr(record, 'PROJECT_TYPE', '') or
+            getattr(record, 'PHD_TYPE', '') or getattr(record, 'TYPE', '') or
             getattr(record, 'INTERNSHIP_TYPE', '') or getattr(record, 'PUBLICATION_TYPE', ''),
             getattr(record, 'COLLEGE_UNIVERSITY', '') or getattr(record, 'institution', ''),
             record.MOBILE_NO,
@@ -1069,7 +1069,7 @@ def download_report(request, model, branch, filename):
     }
     type_map = {
         'PHD_REGISTRATION': 'PHD',
-        'PROJECT_REGISTRATION': 'PROJ',
+        'PRODUCT_REGISTRATION': 'PROD',
         'INTERNSHIP_REGISTRATION': 'INT'
     }
     
@@ -1104,7 +1104,7 @@ def download_report(request, model, branch, filename):
     
     # Title (C1:M1)
     ws.merge_cells('C1:M1')
-    ws['C1'].value = "ATHITH MITHRA INDUSTRIAL PVT LTD"
+    ws['C1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
     ws['C1'].font = Font(bold=True, color="FF0000", size=28, name="Bookman Old Style")
     ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
 
@@ -1140,7 +1140,7 @@ def download_report(request, model, branch, filename):
         end_year = year_int
     
     # Format: AUG'25 TO JULY'26
-    academic_year = f"AUG'{str(start_year)[-2:]} TO JULY'{str(end_year)[-2:]}"
+    academic_year = f"APR'{str(start_year)[-2:]} TO MAR'{str(end_year)[-2:]}"
     record_count = len(data)
     details_text = f"{report_type} DETAILS {academic_year} "
     
@@ -1150,8 +1150,7 @@ def download_report(request, model, branch, filename):
     ws['F2'].alignment = Alignment(horizontal="center", vertical="center")
     ws['F2'].fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
 
-    # Borders
-    # Logo Box
+    
     for row in ws['A1:B3']:
         for cell in row:
             cell.border = border
@@ -1351,7 +1350,7 @@ def download_product_report(request, branch):
     model = model_map.get(branch)
     if not model:
         return HttpResponse("Invalid branch.", status=400)
-    return download_report(request, model, branch, 'PROJECT_REGISTRATION')
+    return download_report(request, model, branch, 'PRODUCT_REGISTRATION')
 
 def download_internship_report(request, branch):
     model_map = {
@@ -1504,7 +1503,7 @@ def export_bills_to_excel(request, branch, bill_type):
 
     # 2. Company Name (C1:K1)
     ws.merge_cells('C1:K1')
-    ws['C1'].value = "ATHITH MITHRA INDUSTRIAL PVT LTD"
+    ws['C1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
     ws['C1'].font = company_font
     ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
 
@@ -1754,7 +1753,7 @@ def export_bills_to_excel(request, branch, bill_type):
     
     bill_type_abbr = {
         'JOURNAL': 'JNL', 'SHARING': 'SB', 'PATENT': 'PAT',
-        'INTERNSHIP': 'INT', 'PROJECT': 'PROJ', 'CENTRE': 'PC'
+        'INTERNSHIP': 'INT', 'PRODUCT': 'PROD', 'CENTRE': 'PC'
     }
     bt_code = bill_type_abbr.get(bill_type.upper(), bill_type.upper())
     y_short = str(year)[-2:] if year else "ALL"
