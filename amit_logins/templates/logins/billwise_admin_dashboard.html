@@ -94,11 +94,11 @@
                         <td>{{ bill.BILL_NUMBER }}</td>
                         <td>{{ bill.REGISTRATION_NUMBER }}</td>
                         <td>{{ bill.NAME }}</td>
-                        <td>{{ bill.TOTAL_AMOUNT }}</td>
-                        <td class="cash-amount">{{ bill.CASH_RECEIVED }}</td>
-                        <td class="online-amount">{{ bill.ONLINE_RECEIVED }}</td>
-                        <td>{{ bill.TOTAL_PAID_AMOUNT_TILL_NOW }}</td>
-                        <td>{{ bill.BALANCE }}</td>
+                        <td style="text-align: right;">{{ bill.TOTAL_AMOUNT }}</td>
+                        <td class="cash-amount" style="text-align: right;">{{ bill.CASH_RECEIVED }}</td>
+                        <td class="online-amount" style="text-align: right;">{{ bill.ONLINE_RECEIVED }}</td>
+                        <td style="text-align: right;">{{ bill.TOTAL_PAID_AMOUNT_TILL_NOW }}</td>
+                        <td style="text-align: right;">{{ bill.BALANCE }}</td>
                         <td>{{ bill.PAYMENT_STATUS }}</td>
                       </tr>
                       {% empty %}
