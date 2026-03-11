@@ -1,0 +1,506 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+<style>
+    .filter-box {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .totals-box {
+        max-width: 700px;
+        margin: 25px auto;
+        background: #ffffff;
+        padding: 0;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+
+    .totals-header {
+        /* background: linear-gradient(90deg, #070808, #050407); */
+        padding: 15px 20px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    .totals-body {
+        padding: 20px 25px;
+    }
+
+    .totals-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .totals-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .icon {
+        font-size: 20px;
+    }
+
+
+</style>
+<h1 class="mt-5 text-center" style="font-weight:900">NAGERCOIL BRANCH</h1>
+
+<!-- TOP BUTTONS PANEL -->
+<div class="text-center mt-4">
+    <!-- <button class="btn btn-outline-light m-2" onclick="showSection('phd-section')">PHD REGISTRATIONS</button> -->
+    <button class="btn btn-outline-light m-2" onclick="showSection('project-section')">PRODUCT REGISTRATIONS</button>
+    <button class="btn btn-outline-light m-2" onclick="showSection('internship-section')">INTERNSHIP REGISTRATIONS</button>
+    <!-- <button class="btn btn-outline-light m-2" onclick="showSection('publication-section')">PUBLICATION REGISTRATIONS</button> -->
+    <!-- <button class="btn btn-outline-light m-2" onclick="showSection('income-section')">DAILY INCOME EXPENDITURES </button> -->
+    <button class="btn btn-outline-light m-2" onclick="showSection('voucher-section')">PAYMENT VOUCHER </button>
+</div>
+
+<div class="container-fluid">
+
+<!-- PHD Registrations -->
+<div class="card mb-4 mt-5 text-center" id="phd-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">PhD Registrations</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.NO</th>
+            <th>DATE</th>
+            <th>REG CODE</th>
+            <th>NAME</th>
+            <th>DEPARTMENT</th>
+            <th>TYPE</th>
+            <th>COLLEGE/UNIVERSITY NAME</th>
+            <th>MOBILE NO</th>
+            <th>EMAIL ID</th>
+            <th>TOTAL AMOUNT</th>
+            <th>AMOUNT PAID</th>
+            <th>AMOUNT BALANCE</th>
+            <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for phd in nagercoil_phds %}
+                <tr>
+                    <td>{{ phd.S_NO }}</td>
+                    <td>{{ phd.DATE|date:"d/m/Y" }}</td>
+                    <td>{{ phd.REG_CODE }}</td>
+                    <td>{{ phd.NAME }}</td>
+                    <td>{{ phd.DEPARTMENT }}</td>
+                    <td>{{ phd.PHD_TYPE }}</td>
+                    <td>{{ phd.COLLEGE_UNIVERSITY }}</td>
+                    <td>{{ phd.MOBILE_NO }}</td>
+                    <td>{{ phd.EMAIL_ID }}</td>
+                    <td>{{ phd.TOTAL_AMOUNT }}</td>
+                    <td>{{ phd.AMOUNT_PAID }}</td>
+                    <td>{{ phd.AMOUNT_BALANCE }}</td>
+                    <td>{{ phd.STATUS }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="13" class="text-center">No registrations found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Project Registrations -->
+<div class="card mb-4 mt-5 text-center" id="project-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">Project Registrations</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.NO</th>
+                    <th>DATE</th>
+                    <th>REG CODE</th>
+                    <th>NAME</th>
+                    <th>DEPARTMENT</th>
+                    <th>TYPE</th>
+                    <th>COLLEGE/UNIVERSITY NAME</th>
+                    <th>MOBILE NO</th>
+                    <th>EMAIL ID</th>
+                    <th>TOTAL AMOUNT</th>
+                    <th>AMOUNT PAID</th>
+                    <th>AMOUNT BALANCE</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in nagercoil_projects %}
+                <tr>
+                    <td>{{ project.S_NO }}</td>
+                    <td>{{ project.DATE|date:"d/m/Y" }}</td>
+                    <td>{{ project.REG_CODE }}</td>
+                    <td>{{ project.NAME }}</td>
+                    <td>{{ project.DEPARTMENT }}</td>
+                    <td>{{ project.PROJECT_TYPE }}</td>
+                    <td>{{ project.COLLEGE_UNIVERSITY }}</td>
+                    <td>{{ project.MOBILE_NO }}</td>
+                    <!-- <td>{{ project.EMAIL_ID }}</td> -->
+                    <td class="text-center align-middle"> {% if project.EMAIL_ID %}
+                                    {{ record.EMAIL_ID }}
+                                    {% else %}
+                                    -
+                                    {% endif %}</td>
+                    <td>{{ project.TOTAL_AMOUNT }}</td>
+                    <td>{{ project.AMOUNT_PAID }}</td>
+                    <td>{{ project.AMOUNT_BALANCE }}</td>
+                    <td>{{ project.STATUS }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="13" class="text-center">No project registrations found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Internship Registrations -->
+<div class="card mb-4 mt-5 text-center" id="internship-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">Internship Registrations</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.NO</th>
+            <th>DATE</th>
+            <th>REG CODE</th>
+            <th>NAME</th>
+            <th>DEPARTMENT</th>
+            <th>TYPE</th>
+            <th>COLLEGE/UNIVERSITY NAME</th>
+            <th>MOBILE NO</th>
+            <th>EMAIL ID</th>
+            <th>TOTAL AMOUNT</th>
+            <th>AMOUNT PAID</th>
+            <th>AMOUNT BALANCE</th>
+            <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for internship in nagercoil_internships %}
+                <tr>
+                    <td>{{ internship.S_NO }}</td>
+                    <td>{{ internship.DATE|date:"d/m/Y" }}</td>
+                    <td>{{ internship.REG_CODE }}</td>
+                    <td>{{ internship.NAME }}</td>
+                    <td>{{ internship.DEPARTMENT }}</td>
+                    <td>{{ internship.INTERNSHIP_TYPE }}</td>
+                    <td>{{ internship.COLLEGE_UNIVERSITY }}</td>
+                    <td>{{ internship.MOBILE_NO }}</td>
+                    <td>{{ internship.EMAIL_ID }}</td>
+                    <td>{{ internship.TOTAL_AMOUNT }}</td>
+                    <td>{{ internship.AMOUNT_PAID }}</td>
+                    <td>{{ internship.AMOUNT_BALANCE }}</td>
+                    <td>{{ internship.STATUS }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="13" class="text-center">No internship registrations found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Publications -->
+<div class="card mb-4 mt-5 text-center" id="publication-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">Publications registrations</div>
+    <div class="card-body">
+        <table class="table table-bordered table-rounded">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.NO</th>
+                <th>DATE</th>
+                <th>REG CODE</th>
+                <th>NAME</th>
+                <th>DEPARTMENT</th>
+                <th>TYPE</th>
+                <th>COLLEGE/UNIVERSITY NAME</th>
+                <th>MOBILE NO</th>
+                <th>EMAIL ID</th>
+                <th>TOTAL AMOUNT</th>
+                <th>AMOUNT PAID</th>
+                <th>AMOUNT BALANCE</th>
+                <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for group in nagercoil_publication_groups %}
+                {% with entries=group.entries.all %}
+                    {% if entries %}
+                        {% for entry in entries %}
+                            <tr>
+                                {% if forloop.first %}
+                                    <td style="vertical-align: middle;" rowspan="{{ entries|length }}">{{ group.S_NO }}</td>
+                                    <td style="vertical-align: middle;"  rowspan="{{ entries|length }}">{{ group.DATE|date:"d/m/Y" }}</td>
+                                    <td style="vertical-align: middle;"  rowspan="{{ entries|length }}">{{ group.REG_CODE }}</td>
+                                {% endif %}
+                                <td>{{ entry.NAME }}</td>
+                                <td>{{ entry.DEPARTMENT }}</td>
+                                <td>{{ entry.PUBLICATION_TYPE }}</td>
+                                <td>{{ entry.COLLEGE_UNIVERSITY }}</td>
+                                <td>{{ entry.MOBILE_NO }}</td>
+                                <td>{{ entry.EMAIL_ID }}</td>
+                                <td>{{ entry.TOTAL_AMOUNT|floatformat:2 }}</td>
+                                <td>{{ entry.AMOUNT_PAID|floatformat:2 }}</td>
+                                <td>{{ entry.AMOUNT_BALANCE|floatformat:2 }}</td>
+                                <td>{{ entry.STATUS }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ group.DATE|date:"d/m/Y" }}</td>
+                            <td>{{ group.REG_CODE }}</td>
+                            <td colspan="10" class="text-center">No entries added for this group.</td>
+                        </tr>
+                    {% endif %}
+                {% endwith %}
+            {% empty %}
+                <tr>
+                    <td colspan="13" class="text-center">No publication entries found.</td>
+                </tr>
+            {% endfor %}
+</tbody>
+
+        </table>
+    </div>
+</div>
+
+<!-- Income/Expenses -->
+<!-- <div class="card mb-4 mt-5 text-center" id="income-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">Daily Income Expenditures</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.no</th><th>Date</th><th>Description</th><th>Income</th><th>Expense</th><th>PVC No</th><th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in nagercoil_income_expenses %}
+                <tr>
+                    <td>{{ record.S_NO }}</td>
+                    <td>{{ record.DATE|date:"d/m/Y" }}</td>
+                    <td style="text-align: left;">{{ record.DESCRIPTION }}</td>
+                    <td>{{ record.INCOME }}</td>
+                    <td>{{ record.EXPENSE }}</td>
+                    <td>{{ record.PVC_NO }}</td>
+                    <td>{{ record.BALANCE }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No income/expense records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> -->
+<div class="card mb-4 mt-5 text-center" id="income-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">
+        Daily Income Expenditures
+    </div>
+
+    <div class="card-body">
+
+        <!-- FILTER -->
+ <div class="filter-box text-center">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label><b>Month</b></label>
+            <select id="monthFilter" class="form-control">
+                <option value="">Select Month</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label><b>Year</b></label>
+            <input type="number" id="yearFilter" class="form-control" placeholder="2025">
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end justify-content-center">
+            <button class="btn btn-primary w-100" onclick="applyFilter()">Filter</button>
+        </div>
+    </div>
+</div>
+
+<div class="totals-box">
+    <div class="totals-header bg-dark text-uppercase">
+        Summary of Income & Expense
+    </div>
+
+    <div class="totals-body">
+
+        <div class="totals-row">
+            <div class="totals-label income-text">
+                <span class="icon"></span> Total Income
+            </div>
+            <div>₹ <span id="totalIncome">0</span></div>
+        </div>
+
+        <div class="totals-row">
+            <div class="totals-label expense-text">
+                <span class="icon"></span> Total Expense
+            </div>
+            <div>₹ <span id="totalExpense">0</span></div>
+        </div>
+
+        <div class="totals-row">
+            <div class="totals-label balance-text">
+                <span class="icon"></span> Final Balance
+            </div>
+            <div>₹ <span id="finalBalance">0</span></div>
+        </div>
+
+    </div>
+</div>
+
+
+        <!-- TABLE -->
+        <table class="table table-bordered table-hover" id="incomeTable">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.no</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Income</th>
+                    <th>Expense</th>
+                    <th>PVC No</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in nagercoil_income_expenses %}
+                <tr>
+                    <td>{{ record.S_NO }}</td>
+                    <td class="dateField">{{ record.DATE|date:"d/m/Y" }}</td>
+                    <td style="text-align: left;">{{ record.DESCRIPTION }}</td>
+                    <td class="incomeField" style="text-align: right;">{{ record.INCOME }}</td>
+                    <td class="expenseField" style="text-align: right;">{{ record.EXPENSE }}</td>
+                    <td>{{ record.PVC_NO }}</td>
+                    <td style="text-align: right;">{{ record.BALANCE }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- TOTALS -->
+        
+
+    </div>
+</div>
+
+
+<!-- JS FILTER + CALCULATION -->
+<script>
+function applyFilter() {
+
+    let selectedMonth = document.getElementById("monthFilter").value;
+    let selectedYear = document.getElementById("yearFilter").value;
+
+    let rows = document.querySelectorAll("#incomeTable tbody tr");
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    rows.forEach(row => {
+
+        let dateText = row.querySelector(".dateField").innerText.trim();
+        let parts = dateText.split("/");   // dd/mm/yyyy
+
+        let day = parseInt(parts[0]);
+        let month = parseInt(parts[1]);    // Already correct month number
+        let year = parseInt(parts[2]);
+
+        // Create valid JS date
+        let rowDate = new Date(year, month - 1, day);
+
+        let rowMonth = rowDate.getMonth() + 1;
+        let rowYear = rowDate.getFullYear();
+
+        if (
+            (selectedMonth === "" || rowMonth == selectedMonth) &&
+            (selectedYear === "" || rowYear == selectedYear)
+        ) {
+            row.style.display = "";
+
+            let income = parseFloat(row.querySelector(".incomeField").innerText) || 0;
+            let expense = parseFloat(row.querySelector(".expenseField").innerText) || 0;
+
+            totalIncome += income;
+            totalExpense += expense;
+
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    document.getElementById("totalIncome").innerText = totalIncome.toFixed(2);
+    document.getElementById("totalExpense").innerText = totalExpense.toFixed(2);
+    document.getElementById("finalBalance").innerText = (totalIncome - totalExpense).toFixed(2);
+}
+</script>
+
+<!-- Payment Vouchers -->
+<div class="card mb-4 mt-5 text-center" id="voucher-section" style="display:none;">
+    <div class="card-header bg-dark text-white text-uppercase">Payment Vouchers</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-uppercase">
+                <tr>
+                    <th>S.no</th><th>Date</th><th>VC No</th><th>Purpose</th><th>Online (A/C)</th><th>Cash</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in nagercoil_payment_vouchers %}
+                <tr>
+                    <td>{{ record.S_NO }}</td>
+                    <td>{{ record.DATE|date:"d/m/Y" }}</td>
+                    <td>{{ record.VC_NO }}</td>
+                    <td style="text-align: left;">{{ record.PURPOSE }}</td>
+                    <td>{{ record.ONLINE_PAYMENT }}</td>
+                    <td>{{ record.CASH_PAYMENT }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No payment vouchers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<!-- TOGGLE SCRIPT -->
+<script>
+    function showSection(id) {
+        const allSections = ['phd-section', 'project-section', 'internship-section', 'publication-section', 'income-section', 'voucher-section'];
+        allSections.forEach(sec => {
+            document.getElementById(sec).style.display = (sec === id) ? 'block' : 'none';
+        });
+    }
+</script>
+
+{% endblock %}

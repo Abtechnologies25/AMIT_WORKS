@@ -1,0 +1,213 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+
+<div class="container-fluid mb-5">
+  <h2 class="text-uppercase text-center mt-5">Billwise Admin Dashboard</h2>
+
+  <!-- Filter Bar -->
+  <div id="filterBar" class="row mt-4 mb-4 justify-content-center">
+    <!-- Bill Type -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold text-uppercase">Select Bill Type</label>
+      <select id="billTypeDropdown" class="form-select">
+        <option value="">-- Select Bill Type --</option>
+        {% for bill_type in bill_types.keys %}
+          <option class="text-uppercase" value="{{ bill_type }}">{{ bill_type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Branch -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold text-uppercase">Select Branch</label>
+      <select id="branchDropdown" class="form-select" disabled>
+        <option value="">-- Select Branch --</option>
+      </select>
+    </div>
+
+    <!-- Year -->
+    <div class="col-md-2">
+      <label class="form-label fw-bold text-uppercase">Select Year</label>
+      <select id="yearDropdown" class="form-select" disabled>
+        <option value="">-- Select Year --</option>
+      </select>
+    </div>
+
+    <!-- Month -->
+    <div class="col-md-2">
+      <label class="form-label fw-bold text-uppercase">Select Month</label>
+      <select id="monthDropdown" class="form-select" disabled>
+        <option value="">-- Select Month --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Bills Section -->
+  <div class="row">
+    <div class="col-12">
+      {% for bill_type, bills in bill_types.items %}
+      <div class="bill-card" data-bill-type="{{ bill_type }}" style="display:none;">
+        <div class="card mt-3">
+          <div class="card-header bg-dark text-white text-center">
+            <h5 class="text-uppercase">{{ bill_type }}</h5>
+          </div>
+          <div class="card-body">
+            {% regroup bills by branch as branch_list %}
+            {% for branch_group in branch_list %}
+            <div class="branch-section" data-branch="{{ branch_group.grouper }}" style="display:none;">
+              <h4 class="text-uppercase mt-4 text-center">{{ branch_group.grouper }}</h4>
+
+              {% regroup branch_group.list by YEAR as year_list %}
+              {% for year_group in year_list %}
+              <div class="year-section" data-year="{{ year_group.grouper }}" style="display:none;">
+                <h5 class="mt-3 text-center">Year: {{ year_group.grouper }}</h5>
+
+                {% regroup year_group.list by MONTH as month_list %}
+                {% for month_group in month_list %}
+                <div class="month-section" data-month="{{ month_group.grouper }}" style="display:none;">
+                  <h6 class="mt-2 text-center">Month: {{ month_group.grouper }}</h6>
+
+                  <table class="table table-bordered table-hover mt-2 text-center">
+                    <thead class="table-light">
+                      <tr>
+                        <th rowspan="2">S.NO</th>
+                        <th rowspan="2">DATE</th>
+                        <th rowspan="2">BILL NO</th>
+                        <th rowspan="2">REG NO</th>
+                        <th rowspan="2">NAME</th>
+                        <th rowspan="2">TOTAL AMOUNT</th>
+                        <th colspan="2">AMOUNT RECEIVED</th>
+                        <th rowspan="2">TOTAL PAID AMOUNT</th>
+                        <th rowspan="2">BALANCE</th>
+                        <th rowspan="2">PAYMENT STATUS</th>
+                      </tr>
+                      <tr>
+                        <th>CASH RECEIVED</th>
+                        <th>ONLINE RECEIVED</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for bill in month_group.list %}
+                      <tr>
+                        <td>{{ bill.S_NO }}</td>
+                        <td>{{ bill.DATE|date:"d/m/Y" }}</td>
+                        <td>{{ bill.BILL_NUMBER }}</td>
+                        <td>{{ bill.REGISTRATION_NUMBER }}</td>
+                        <td>{{ bill.NAME }}</td>
+                        <td>{{ bill.TOTAL_AMOUNT }}</td>
+                        <td class="cash-amount">{{ bill.CASH_RECEIVED }}</td>
+                        <td class="online-amount">{{ bill.ONLINE_RECEIVED }}</td>
+                        <td>{{ bill.TOTAL_PAID_AMOUNT_TILL_NOW }}</td>
+                        <td>{{ bill.BALANCE }}</td>
+                        <td>{{ bill.PAYMENT_STATUS }}</td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                        <td colspan="13" class="text-center">No bills found.</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+
+                  <!-- Monthly total -->
+                  <p class="text-end fw-bold monthly-total"
+                    data-branch="{{ branch_group.grouper }}"
+                    data-year="{{ year_group.grouper }}"
+                    data-month="{{ month_group.grouper }}">
+                    MONTHLY INCOME TOTAL: ₹ 0 (Cash: ₹ 0, Online: ₹ 0)
+                  </p>
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const billTypeDropdown = document.getElementById("billTypeDropdown");
+  const branchDropdown = document.getElementById("branchDropdown");
+  const yearDropdown = document.getElementById("yearDropdown");
+  const monthDropdown = document.getElementById("monthDropdown");
+
+  // Pass dropdown data from Django
+  const dropdownData = {{ dropdown_data|safe }};
+
+  billTypeDropdown.addEventListener("change", function () {
+    const billType = this.value;
+    resetDropdown(branchDropdown, "-- Select Branch --");
+    resetDropdown(yearDropdown, "-- Select Year --");
+    resetDropdown(monthDropdown, "-- Select Month --");
+
+    // Hide all bill cards
+    document.querySelectorAll(".bill-card").forEach(c => c.style.display = "none");
+
+    if (billType && dropdownData[billType]) {
+      const data = dropdownData[billType];
+      fillDropdown(branchDropdown, data.branches);
+      fillDropdown(yearDropdown, data.years);
+      fillDropdown(monthDropdown, data.months);
+
+      branchDropdown.disabled = false;
+      yearDropdown.disabled = false;
+      monthDropdown.disabled = false;
+
+      document.querySelector(`.bill-card[data-bill-type='${billType}']`).style.display = "block";
+    }
+  });
+
+  function resetDropdown(dropdown, defaultText) {
+    dropdown.innerHTML = `<option value="">${defaultText}</option>`;
+    dropdown.disabled = true;
+  }
+
+  function fillDropdown(dropdown, items) {
+    items.forEach(i => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      dropdown.appendChild(opt);
+    });
+  }
+
+  // Filtering display logic
+  [branchDropdown, yearDropdown, monthDropdown].forEach(select => {
+    select.addEventListener("change", () => {
+      const selectedBillType = billTypeDropdown.value;
+      const selectedBranch = branchDropdown.value;
+      const selectedYear = yearDropdown.value;
+      const selectedMonth = monthDropdown.value;
+
+      document.querySelectorAll(`.bill-card[data-bill-type='${selectedBillType}'] .branch-section`).forEach(branchEl => {
+        branchEl.style.display = !selectedBranch || branchEl.dataset.branch === selectedBranch ? "block" : "none";
+        branchEl.querySelectorAll(".year-section").forEach(yearEl => {
+          yearEl.style.display = (!selectedYear || yearEl.dataset.year === selectedYear) ? "block" : "none";
+          yearEl.querySelectorAll(".month-section").forEach(monthEl => {
+            monthEl.style.display = (!selectedMonth || monthEl.dataset.month === selectedMonth) ? "block" : "none";
+          });
+        });
+      });
+    });
+  });
+
+  // Monthly totals
+  document.querySelectorAll('.monthly-total').forEach(totalEl => {
+    const table = totalEl.previousElementSibling;
+    let totalCash = 0, totalOnline = 0;
+
+    table.querySelectorAll('.cash-amount').forEach(c => totalCash += parseFloat(c.textContent.replace(/[^0-9.]/g, '')) || 0);
+    table.querySelectorAll('.online-amount').forEach(c => totalOnline += parseFloat(c.textContent.replace(/[^0-9.]/g, '')) || 0);
+
+    const grandTotal = totalCash + totalOnline;
+    totalEl.textContent = `MONTHLY INCOME TOTAL: ₹ ${grandTotal.toFixed(2)} (Cash: ₹ ${totalCash.toFixed(2)}, Online: ₹ ${totalOnline.toFixed(2)})`;
+  });
+});
+</script>
+{% endblock %}

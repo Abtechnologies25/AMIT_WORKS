@@ -71,9 +71,9 @@
             <td>{{ record.COLLEGE_UNIVERSITY }}</td>
             <td>{{ record.MOBILE_NO }}</td>
             <td>{{ record.EMAIL_ID }}</td>
-            <td>{{ record.TOTAL_AMOUNT }}</td>
-            <td>{{ record.AMOUNT_PAID }}</td>
-            <td>{{ record.AMOUNT_BALANCE }}</td>
+            <td style="text-align: right;">{{ record.TOTAL_AMOUNT }}</td>
+            <td style="text-align: right;">{{ record.AMOUNT_PAID }}</td>
+            <td style="text-align: right;">{{ record.AMOUNT_BALANCE }}</td>
             <td>{{ record.STATUS }}</td>
             <td>
                 <a href="{% url 'edit_internship_registration' branch record.id %}" class="btn btn-warning">Edit</a>

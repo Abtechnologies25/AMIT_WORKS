@@ -19,6 +19,23 @@
 
         <a href="{% url 'workstatus_branch_list' %}" class="btn  text-light mt-5"><div class="box text-light bg-primary">WORK STATUS DASHBOARD</div></a>
 
+         <button type="button" class="btn  mt-5" onclick="openBranchPanel()">
+                <div class="box text-light btn-primary ">REGISTRATION DETAILS</div>
+            </button>
+
+            <!-- Custom Branch Panel -->
+            <div id="branchPanel" class="branch-overlay">
+                <div class="branch-box">
+                    <span class="branch-close" onclick="closeBranchPanel()">&times;</span>
+                    <h4 class="mb-3 text-uppercase">Select Branch</h4>
+                    <a href="{% url 'nagercoil_admin_dashboard' %}" class="btn btn-primary w-100 mt-2">NAGERCOIL
+                        BRANCH</a>
+
+                </div>
+            </div>
+            <a href="{% url 'billwise_admin_dashboard' %}" class="btn  text-light mt-5">
+                <div class="box text-light btn-primary">BILLWISE PAYMENT</div>
+            </a>
 
     </div>
 

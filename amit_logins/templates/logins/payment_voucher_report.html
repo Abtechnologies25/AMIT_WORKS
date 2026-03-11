@@ -60,8 +60,8 @@
             <td>{{ record.DATE|date:"d/m/Y" }}</td>
             <td>{{ record.VC_NO }}</td>
             <td style="text-align: left;">{{ record.PURPOSE }}</td>
-            <td>{{ record.ONLINE_PAYMENT }}</td>
-            <td>{{ record.CASH_PAYMENT }}</td>
+            <td style="text-align: right;">{{ record.ONLINE_PAYMENT }}</td>
+            <td style="text-align: right;">{{ record.CASH_PAYMENT }}</td>
             <td>
                 <a href="{% url 'edit_payment_voucher' branch=branch record_id=record.id %}" class="btn btn-warning btn-sm">Edit</a>
                 <a href="{% url 'delete_payment_voucher' branch=branch record_id=record.id %}"

@@ -146,6 +146,99 @@ def admin_dashboard(request):
         'branches': BRANCHES,
     }
     return render(request, 'logins/admin_dashboard.html', context)
+def nagercoil_admin_dashboard(request):
+    nagercoil_projects = NagercoilProductRegistration.objects.all().order_by('DATE','S_NO')
+    nagercoil_internships = NagercoilInternshipRegistration.objects.all().order_by('DATE','S_NO')
+    # nagercoil_publication_groups = NagercoilPublicationGroup.objects.prefetch_related('entries').order_by('DATE','S_NO')
+    # nagercoil_income_expenses = NagercoilDailyIncomeExpenditure.objects.all().order_by('DATE','S_NO')
+    nagercoil_payment_vouchers = NagercoilPaymentVoucher.objects.all().order_by('DATE','S_NO')
+    context = {
+        # 'nagercoil_phds': NagercoilPhdRegistration.objects.all().order_by('DATE','S_NO'),
+        'nagercoil_projects': nagercoil_projects,
+        'nagercoil_internships': nagercoil_internships,
+        # 'nagercoil_publication_groups': nagercoil_publication_groups,
+        # 'nagercoil_income_expenses': nagercoil_income_expenses,
+        'nagercoil_payment_vouchers': nagercoil_payment_vouchers,
+    }
+    return render(request, 'logins/nagercoil_admin_dashboard.html', context)
+
+def billwise_admin_dashboard(request):
+    bill_models = {
+        # 'PhD Bills': {
+        #     'NAGERCOIL': NAGERCOILPHDBILL,
+        #     'TIRUNELVELI': TIRUNELVELIPHDBILL,
+        #     'PUDUKOTTAI': PUDUKOTTAIPHDBILL,
+        #     'CHENNAI': CHENNAIPHDBILL,
+        # },
+        'Internship Bills': {
+            'NAGERCOIL': NAGERCOILINTERNSHIPBILL,
+            'TIRUNELVELI': TIRUNELVELIINTERNSHIPBILL,
+            'PUDUKOTTAI': PUDUKOTTAIINTERNSHIPBILL,
+            'CHENNAI': CHENNAIINTERNSHIPBILL,
+        },
+        'Product Bills': {
+            'NAGERCOIL': NAGERCOILPRODUCTBILL,
+            'TIRUNELVELI': TIRUNELVELIPRODUCTBILL,
+            'PUDUKOTTAI': PUDUKOTTAIPRODUCTBILL,
+            'CHENNAI': CHENNAIPRODUCTBILL,
+        },
+        # 'Journal Bills': {
+        #     'NAGERCOIL': NAGERCOILJOURNALBILL,
+        #     'TIRUNELVELI': TIRUNELVELIJOURNALBILL,
+        #     'PUDUKOTTAI': PUDUKOTTAIJOURNALBILL,
+        #     'CHENNAI': CHENNAIJOURNALBILL,
+        # },
+        # 'Sharing Bills': {
+        #     'NAGERCOIL': NAGERCOILSHARINGBILL,
+        #     'TIRUNELVELI': TIRUNELVELISHARINGBILL,
+        #     'PUDUKOTTAI': PUDUKOTTAISHARINGBILL,
+        #     'CHENNAI': CHENNAISHARINGBILL,
+        # },
+        # 'Patent Bills': {
+        #     'NAGERCOIL': NAGERCOILPATENTBILL,
+        #     'TIRUNELVELI': TIRUNELVELIPATENTBILL,
+        #     'PUDUKOTTAI': PUDUKOTTAIPATENTBILL,
+        #     'CHENNAI': CHENNAIPATENTBILL,
+        # },
+    }
+
+    bill_types = {}
+    dropdown_data = {}
+
+    for bill_type, branches in bill_models.items():
+        all_bills = []
+        unique_branches, unique_years, unique_months = set(), set(), set()
+
+        for branch_name, model in branches.items():
+            bills = model.objects.all().order_by('YEAR', 'MONTH', 'S_NO', 'DATE')
+            for bill in bills:
+                bill.branch = branch_name
+                all_bills.append(bill)
+                unique_branches.add(branch_name)
+                if bill.YEAR:
+                    unique_years.add(str(bill.YEAR).strip())
+                if bill.MONTH:
+                    # Normalize month name (remove spaces, capitalize first letter)
+                    month_clean = bill.MONTH.strip().capitalize()
+                    unique_months.add(month_clean)
+
+        # Sort months in calendar order if possible
+        month_order = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+        sorted_months = sorted(unique_months, key=lambda m: month_order.index(m) if m in month_order else m)
+
+        bill_types[bill_type] = all_bills
+        dropdown_data[bill_type] = {
+            'branches': sorted(unique_branches),
+            'years': sorted(unique_years),
+            'months': sorted_months,
+        }
+    return render(request, 'logins/billwise_admin_dashboard.html', {
+        'bill_types': bill_types,
+        'dropdown_data': dropdown_data,
+    })
 
 @login_required(login_url='login')
 def workstatus_branch_list(request):
