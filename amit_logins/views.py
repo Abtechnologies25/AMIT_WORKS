@@ -1624,8 +1624,8 @@ def export_bills_to_excel(request, branch, bill_type):
         logo.width, logo.height = 120, 100  # Wider for A1:B3
         ws.add_image(logo, "A1")
 
-    # 2. Company Name (C1:K1)
-    ws.merge_cells('C1:K1')
+    # 2. Company Name (C1:G1)
+    ws.merge_cells('C1:G1')
     ws['C1'].value = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
     ws['C1'].font = company_font
     ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
@@ -1636,25 +1636,24 @@ def export_bills_to_excel(request, branch, bill_type):
     ws['C2'].font = branch_font
     ws['C2'].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-    # 4. Payment Details (E2:I3)
-    ws.merge_cells('E2:I3')
+    # 4. Payment Details (E2:F3)
+    ws.merge_cells('E2:F3')
     display_bill_type = "PROJECT CENTRE" if bill_type.upper() == "CENTRE" else bill_type.upper()
     ws['E2'].value = f"{display_bill_type} BILLWISE PAYMENT DETAILS"
     ws['E2'].font = details_font
     ws['E2'].alignment = Alignment(horizontal="center", vertical="center")
 
-    # 5. Month & Year Label (J2:K2)
-    ws.merge_cells('J2:K2')
-    ws['J2'].value = "MONTH & YEAR"
-    ws['J2'].font = month_year_label_font
-    ws['J2'].alignment = Alignment(horizontal="center", vertical="center")
+    # 5. Month & Year Label/Value (G2:G3)
+    ws.merge_cells('G2:G2')
+    ws['G2'].value = "MONTH & YEAR"
+    ws['G2'].font = month_year_label_font
+    ws['G2'].alignment = Alignment(horizontal="center", vertical="center")
 
-    # 6. Month & Year Value (J3:K3)
-    ws.merge_cells('J3:K3')
+    ws.merge_cells('G3:G3')
     month_name = datetime.strptime(month, "%m").strftime("%b").upper() if month and month.isdigit() else "ALL"
-    ws['J3'].value = f"{month_name} & {year or 'ALL'}"
-    ws['J3'].font = month_year_value_font
-    ws['J3'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['G3'].value = f"{month_name} & {year or 'ALL'}"
+    ws['G3'].font = month_year_value_font
+    ws['G3'].alignment = Alignment(horizontal="center", vertical="center")
 
     # Apply borders to header area (Rows 1-3, Columns A-K)
     for r in range(1, 4):
@@ -1702,17 +1701,17 @@ def export_bills_to_excel(request, branch, bill_type):
         if week_num != current_week:
             # 1. Insert Subtotal for the PREVIOUS week
             if current_week is not None:
-                ws.cell(row=current_row, column=6, value=f"WEEK {current_week} TOTAL").font = subtotal_font
-                ws.cell(row=current_row, column=6).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=current_row, column=5, value=f"WEEK {current_week} TOTAL").font = subtotal_font
+                ws.cell(row=current_row, column=5).alignment = Alignment(horizontal="center", vertical="center")
                 
                 # Separate Cash and Online payment totals
-                ws.cell(row=current_row, column=7, value=week_cash).font = subtotal_font
+                ws.cell(row=current_row, column=6, value=week_cash).font = subtotal_font
+                ws.cell(row=current_row, column=6).alignment = Alignment(horizontal="right", vertical="center")
+                ws.cell(row=current_row, column=7, value=week_online).font = subtotal_font
                 ws.cell(row=current_row, column=7).alignment = Alignment(horizontal="right", vertical="center")
-                ws.cell(row=current_row, column=8, value=week_online).font = subtotal_font
-                ws.cell(row=current_row, column=8).alignment = Alignment(horizontal="right", vertical="center")
                 
                
-                for c in range(1, 12):
+                for c in range(1, 8):
                     cell = ws.cell(row=current_row, column=c)
                     cell.fill = subtotal_fill
                     cell.border = border
@@ -1781,14 +1780,14 @@ def export_bills_to_excel(request, branch, bill_type):
 
     # Insert Subtotal for the LAST week
     if current_week is not None:
-        ws.cell(row=current_row, column=6, value=f"WEEK {current_week} TOTAL").font = subtotal_font
-        ws.cell(row=current_row, column=6).alignment = Alignment(horizontal="center", vertical="center")
+        ws.cell(row=current_row, column=5, value=f"WEEK {current_week} TOTAL").font = subtotal_font
+        ws.cell(row=current_row, column=5).alignment = Alignment(horizontal="center", vertical="center")
         
         # Separate Cash and Online payment totals
-        ws.cell(row=current_row, column=7, value=week_cash).font = subtotal_font
+        ws.cell(row=current_row, column=6, value=week_cash).font = subtotal_font
+        ws.cell(row=current_row, column=6).alignment = Alignment(horizontal="right", vertical="center")
+        ws.cell(row=current_row, column=7, value=week_online).font = subtotal_font
         ws.cell(row=current_row, column=7).alignment = Alignment(horizontal="right", vertical="center")
-        ws.cell(row=current_row, column=8, value=week_online).font = subtotal_font
-        ws.cell(row=current_row, column=8).alignment = Alignment(horizontal="right", vertical="center")
         
         # Apply fill and borders to the subtotal row (A-G)
         for c in range(1, 8):
@@ -1837,7 +1836,7 @@ def export_bills_to_excel(request, branch, bill_type):
     ws.row_dimensions[signature_row].height = 45
 
     # === COLUMN WIDTHS ===
-    col_widths = [8, 15, 18, 25, 45, 18, 18]
+    col_widths = [10, 18, 18, 30, 80, 18, 28]
     for i, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 
