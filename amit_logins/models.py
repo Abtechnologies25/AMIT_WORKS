@@ -231,7 +231,6 @@ class AbstractBill(models.Model):
     BILL_NUMBER = models.CharField(max_length=100)
     REGISTRATION_NUMBER = models.CharField(max_length=100)
     NAME = models.CharField(max_length=255)
-    TOTAL_AMOUNT = models.DecimalField(max_digits=10, decimal_places=2)
     CASH_RECEIVED = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # MODE_CHOICES = [
     #     ('ONLINE', 'ONLINE'),
@@ -240,16 +239,9 @@ class AbstractBill(models.Model):
     # ]
     # modeofpayment = models.CharField(max_length=50, choices=MODE_CHOICES)
     ONLINE_RECEIVED = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    TOTAL_PAID_AMOUNT_TILL_NOW = models.DecimalField(max_digits=10, decimal_places=2)
-    BALANCE = models.DecimalField(max_digits=10, decimal_places=2)
-    PAYMENT_STATUS = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='IN PROGRESS')
 
     class Meta:
         abstract = True
-    def save(self, *args, **kwargs):
-        # Automatically calculate balance
-        self.BALANCE = self.TOTAL_AMOUNT - self.TOTAL_PAID_AMOUNT_TILL_NOW
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.NAME} - {self.BILL_NUMBER}"
@@ -293,3 +285,62 @@ class CHENNAIPRODUCTBILL(AbstractBill):
     class Meta:
         verbose_name = "Chennai Project Bill"
         verbose_name_plural = "Chennai Project Bills"
+
+class AbstractTaxInvoice(models.Model):
+    INVOICE_NO = models.CharField(max_length=100)
+    DATE = models.DateField()
+    BILL_TO = models.TextField()
+    TOTAL_AMOUNT = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    GST_18 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    TOTAL_AMOUNT_WITH_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    ROUND_OFF = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    GRAND_TOTAL = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    AMOUNT_IN_WORDS = models.TextField()
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"Invoice {self.invoice_no} - {self.date}"
+
+class AbstractTaxInvoiceItem(models.Model):
+    S_NO = models.IntegerField()
+    DESCRIPTION = models.TextField()
+    QTY = models.IntegerField()
+    UNIT_PRICE = models.DecimalField(max_digits=10, decimal_places=2)
+    TOTAL_VALUE = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        abstract = True
+
+class NAGERCOILTAXINVOICE(AbstractTaxInvoice):
+    class Meta:
+        verbose_name = "Nagercoil Tax Invoice"
+        verbose_name_plural = "Nagercoil Tax Invoices"
+
+class NagercoilTAXINVOICEITEM(AbstractTaxInvoiceItem):
+    invoice = models.ForeignKey(NAGERCOILTAXINVOICE, on_delete=models.CASCADE, related_name='items')
+
+class TIRUNELVELITAXINVOICE(AbstractTaxInvoice):
+    class Meta:
+        verbose_name = "Tirunelveli Tax Invoice"
+        verbose_name_plural = "Tirunelveli Tax Invoices"
+
+class TIRUNELVELITAXINVOICEITEM(AbstractTaxInvoiceItem):
+    invoice = models.ForeignKey(TIRUNELVELITAXINVOICE, on_delete=models.CASCADE, related_name='items')
+
+class PUDUKOTTAITAXINVOICE(AbstractTaxInvoice):
+    class Meta:
+        verbose_name = "Pudukottai Tax Invoice"
+        verbose_name_plural = "Pudukottai Tax Invoices"
+
+class PUDUKOTTAITAXINVOICEITEM(AbstractTaxInvoiceItem):
+    invoice = models.ForeignKey(PUDUKOTTAITAXINVOICE, on_delete=models.CASCADE, related_name='items')
+
+class CHENNAITAXINVOICE(AbstractTaxInvoice):
+    class Meta:
+        verbose_name = "Chennai Tax Invoice"
+        verbose_name_plural = "Chennai Tax Invoices"
+
+class CHENNAITAXINVOICEITEM(AbstractTaxInvoiceItem):
+    invoice = models.ForeignKey(CHENNAITAXINVOICE, on_delete=models.CASCADE, related_name='items')

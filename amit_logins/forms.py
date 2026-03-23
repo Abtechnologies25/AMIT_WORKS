@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm,SetPasswordForm
 from .models import *
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, inlineformset_factory
 
 class UserRegisterForm(UserCreationForm):
     department = forms.ChoiceField(choices=User.DEPARTMENT_CHOICES, label="Department")
@@ -158,8 +158,8 @@ DATE_WIDGET = forms.DateInput(attrs={'type': 'date'})
 class BaseBillForm(forms.ModelForm):
     class Meta:
         fields = [
-            'S_NO','DATE','MONTH','YEAR', 'BILL_NUMBER', 'REGISTRATION_NUMBER', 'NAME', 'TOTAL_AMOUNT',
-            'CASH_RECEIVED', 'ONLINE_RECEIVED','TOTAL_PAID_AMOUNT_TILL_NOW','PAYMENT_STATUS'
+            'S_NO','DATE','MONTH','YEAR', 'BILL_NUMBER', 'REGISTRATION_NUMBER', 'NAME',
+            'CASH_RECEIVED', 'ONLINE_RECEIVED'
         ]
         widgets = {
             'DATE': DATE_WIDGET,
@@ -171,3 +171,64 @@ for model in [ NAGERCOILINTERNSHIPBILL, NAGERCOILPRODUCTBILL, TIRUNELVELIINTERNS
     
     form_class = type(f"{model.__name__}Form", (BaseBillForm,), {'Meta': type('Meta', (), {'model': model, **BaseBillForm.Meta.__dict__})})
     globals()[form_class.__name__] = form_class
+
+class AbstractTaxInvoiceForm(forms.ModelForm):
+    class Meta:
+        fields = [
+            'INVOICE_NO', 'DATE', 'BILL_TO', 
+            'TOTAL_AMOUNT', 'GST_18', 'TOTAL_AMOUNT_WITH_GST', 
+            'ROUND_OFF', 'GRAND_TOTAL', 'AMOUNT_IN_WORDS'
+        ]
+        widgets = {
+            'DATE': forms.DateInput(attrs={'type': 'date'}),
+            'BILL_TO': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Bill To Details'}),
+            'TOTAL_AMOUNT': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'GST_18': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'TOTAL_AMOUNT_WITH_GST': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'ROUND_OFF': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'GRAND_TOTAL': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'AMOUNT_IN_WORDS': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Amount in Words'}),
+        }
+
+class AbstractTaxInvoiceItemForm(forms.ModelForm):
+    class Meta:
+        fields = ['S_NO', 'DESCRIPTION', 'QTY', 'UNIT_PRICE', 'TOTAL_VALUE']
+        widgets = {
+            'S_NO': forms.TextInput(),
+            'DESCRIPTION': forms.Textarea(attrs={'rows': 1, 'placeholder': 'Item Description'}),
+            'QTY': forms.TextInput(),
+            'UNIT_PRICE': forms.TextInput(),
+            'TOTAL_VALUE': forms.TextInput(attrs={'readonly': 'readonly'}),
+        }
+
+class NagercoilTaxInvoiceForm(AbstractTaxInvoiceForm):
+    class Meta(AbstractTaxInvoiceForm.Meta):
+        model = NAGERCOILTAXINVOICE
+
+NagercoilTaxInvoiceItemFormSet = inlineformset_factory(
+    NAGERCOILTAXINVOICE, NagercoilTAXINVOICEITEM, form=AbstractTaxInvoiceItemForm, extra=1, can_delete=True
+)
+
+class TirunelveliTaxInvoiceForm(AbstractTaxInvoiceForm):
+    class Meta(AbstractTaxInvoiceForm.Meta):
+        model = TIRUNELVELITAXINVOICE
+
+TirunelveliTaxInvoiceItemFormSet = inlineformset_factory(
+    TIRUNELVELITAXINVOICE, TIRUNELVELITAXINVOICEITEM, form=AbstractTaxInvoiceItemForm, extra=1, can_delete=True
+)
+
+class PudukottaiTaxInvoiceForm(AbstractTaxInvoiceForm):
+    class Meta(AbstractTaxInvoiceForm.Meta):
+        model = PUDUKOTTAITAXINVOICE
+
+PudukottaiTaxInvoiceItemFormSet = inlineformset_factory(
+    PUDUKOTTAITAXINVOICE, PUDUKOTTAITAXINVOICEITEM, form=AbstractTaxInvoiceItemForm, extra=1, can_delete=True
+)
+
+class ChennaiTaxInvoiceForm(AbstractTaxInvoiceForm):
+    class Meta(AbstractTaxInvoiceForm.Meta):
+        model = CHENNAITAXINVOICE
+
+ChennaiTaxInvoiceItemFormSet = inlineformset_factory(
+    CHENNAITAXINVOICE, CHENNAITAXINVOICEITEM, form=AbstractTaxInvoiceItemForm, extra=1, can_delete=True
+)

@@ -64,10 +64,10 @@
             <td>{{ record.S_NO }}</td>
             <td>{{ record.DATE|date:"d/m/Y" }}</td>
             <td>{{ record.REG_CODE }}</td>
-            <td>{{ record.NAME }}</td>
+            <td style="text-align: left;">{{ record.NAME }}</td>
             <td>{{ record.DEPARTMENT }}</td>
-            <td>{{ record.TYPE }}</td>
-            <td>{{ record.COLLEGE_UNIVERSITY }}</td>
+            <td style="text-align: left;">{{ record.TYPE }}</td>
+            <td style="text-align: left;">{{ record.COLLEGE_UNIVERSITY }}</td>
             <td>{{ record.MOBILE_NO }}</td>
             <td> {% if record.EMAIL_ID %}
                                     {{ record.EMAIL_ID }}

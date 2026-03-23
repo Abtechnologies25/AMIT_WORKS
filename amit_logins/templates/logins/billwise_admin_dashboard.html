@@ -75,11 +75,7 @@
                         <th rowspan="2">BILL NO</th>
                         <th rowspan="2">REG NO</th>
                         <th rowspan="2">NAME</th>
-                        <th rowspan="2">TOTAL AMOUNT</th>
                         <th colspan="2">AMOUNT RECEIVED</th>
-                        <th rowspan="2">TOTAL PAID AMOUNT</th>
-                        <th rowspan="2">BALANCE</th>
-                        <th rowspan="2">PAYMENT STATUS</th>
                       </tr>
                       <tr>
                         <th>CASH RECEIVED</th>
@@ -94,12 +90,8 @@
                         <td>{{ bill.BILL_NUMBER }}</td>
                         <td>{{ bill.REGISTRATION_NUMBER }}</td>
                         <td>{{ bill.NAME }}</td>
-                        <td style="text-align: right;">{{ bill.TOTAL_AMOUNT }}</td>
                         <td class="cash-amount" style="text-align: right;">{{ bill.CASH_RECEIVED }}</td>
                         <td class="online-amount" style="text-align: right;">{{ bill.ONLINE_RECEIVED }}</td>
-                        <td style="text-align: right;">{{ bill.TOTAL_PAID_AMOUNT_TILL_NOW }}</td>
-                        <td style="text-align: right;">{{ bill.BALANCE }}</td>
-                        <td>{{ bill.PAYMENT_STATUS }}</td>
                       </tr>
                       {% empty %}
                       <tr>

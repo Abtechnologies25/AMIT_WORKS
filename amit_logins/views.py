@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect,get_object_or_404
+from decimal import Decimal
 from datetime import datetime, date
 import pandas as pd
 from django.http import HttpResponse
@@ -798,6 +799,128 @@ def download_report_payment_voucher(request, model, branch, filename):
     ws.row_dimensions[current_row].height = 25
     ws.merge_cells(start_row=current_row, start_column=4, end_row=current_row, end_column=5)
     ws.cell(row=current_row, column=4, value="TOTAL AMOUNT").font = data_font_bold
+
+def get_tax_invoice_model(branch):
+    branch = branch.upper()
+    if branch == 'NAGERCOIL':
+        return NAGERCOILTAXINVOICE, NagercoilTaxInvoiceForm, NagercoilTaxInvoiceItemFormSet
+    elif branch == 'TIRUNELVELI':
+        return TIRUNELVELITAXINVOICE, TirunelveliTaxInvoiceForm, TirunelveliTaxInvoiceItemFormSet
+    elif branch == 'PUDUKOTTAI':
+        return PUDUKOTTAITAXINVOICE, PudukottaiTaxInvoiceForm, PudukottaiTaxInvoiceItemFormSet
+    elif branch == 'CHENNAI':
+        return CHENNAITAXINVOICE, ChennaiTaxInvoiceForm, ChennaiTaxInvoiceItemFormSet
+    return None, None, None
+
+@login_required(login_url='login')
+def tax_invoice_list(request, branch):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoices = Model.objects.all().order_by('-DATE', '-INVOICE_NO')
+    return render(request, 'logins/tax_invoice_list.html', {
+        'invoices': invoices,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def add_tax_invoice(request, branch):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = Form(request.POST)
+        formset = ItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            invoice = form.save(commit=False)
+            invoice.save()
+            items = formset.save(commit=False)
+            total_amount = Decimal('0.00')
+            for item in items:
+                item.invoice = invoice
+                item.TOTAL_VALUE = Decimal(str(item.QTY)) * Decimal(str(item.UNIT_PRICE))
+                item.save()
+                total_amount += item.TOTAL_VALUE
+            
+            # Recalculate totals
+            invoice.TOTAL_AMOUNT = total_amount
+            invoice.GST_18 = (total_amount * Decimal('0.18')).quantize(Decimal('0.01'))
+            invoice.TOTAL_AMOUNT_WITH_GST = invoice.TOTAL_AMOUNT + invoice.GST_18
+            invoice.GRAND_TOTAL = Decimal(str(round(float(invoice.TOTAL_AMOUNT_WITH_GST))))
+            invoice.ROUND_OFF = (invoice.GRAND_TOTAL - invoice.TOTAL_AMOUNT_WITH_GST).quantize(Decimal('0.01'))
+            invoice.save()
+            return redirect('tax_invoice_list', branch=branch)
+    else:
+        form = Form()
+        formset = ItemFormSet()
+    
+    return render(request, 'logins/tax_invoice_add.html', {
+        'form': form,
+        'formset': formset,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def view_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    return render(request, 'logins/tax_invoice_view.html', {
+        'invoice': invoice,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def edit_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    if request.method == 'POST':
+        form = Form(request.POST, instance=invoice)
+        formset = ItemFormSet(request.POST, instance=invoice)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            items = formset.save(commit=False)
+            for item in items:
+                item.TOTAL_VALUE = Decimal(str(item.QTY)) * Decimal(str(item.UNIT_PRICE))
+                item.save()
+            
+            # Recalculate totals
+            all_items = invoice.items.all()
+            total_amount = sum(item.TOTAL_VALUE for item in all_items)
+            invoice.TOTAL_AMOUNT = total_amount
+            invoice.GST_18 = (total_amount * Decimal('0.18')).quantize(Decimal('0.01'))
+            invoice.TOTAL_AMOUNT_WITH_GST = invoice.TOTAL_AMOUNT + invoice.GST_18
+            invoice.GRAND_TOTAL = Decimal(str(round(float(invoice.TOTAL_AMOUNT_WITH_GST))))
+            invoice.ROUND_OFF = (invoice.GRAND_TOTAL - invoice.TOTAL_AMOUNT_WITH_GST).quantize(Decimal('0.01'))
+            invoice.save()
+            return redirect('tax_invoice_list', branch=branch)
+    else:
+        form = Form(instance=invoice)
+        formset = ItemFormSet(instance=invoice)
+    
+    return render(request, 'logins/tax_invoice_add.html', {
+        'form': form,
+        'formset': formset,
+        'branch': branch,
+        'action': 'Edit'
+    })
+
+@login_required(login_url='login')
+def delete_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    invoice.delete()
+    return redirect('tax_invoice_list', branch=branch)
     ws.cell(row=current_row, column=4).alignment = right_align_v
     ws.cell(row=current_row, column=6, value=total_online).font = data_font_bold
     ws.cell(row=current_row, column=6).alignment = right_align_v
@@ -1535,14 +1658,13 @@ def export_bills_to_excel(request, branch, bill_type):
 
     # Apply borders to header area (Rows 1-3, Columns A-K)
     for r in range(1, 4):
-        for c in range(1, 12):
+        for c in range(1, 8):
             ws.cell(row=r, column=c).border = border
 
     # === TABLE HEADERS (Row 4) ===
     headers = [
         'S.NO', 'DATE', 'BILL NUMBER', 'REGISTRATION NUMBER', 'NAME',
-        'TOTAL AMOUNT', 'CASH PAYMENT', 'ONLINE PAYMENT',
-        'TOTAL PAID AMOUNT TILL NOW', 'BALANCE', 'PAYMENT STATUS'
+        'CASH PAYMENT', 'ONLINE PAYMENT'
     ]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=4, column=col_num, value=header)
@@ -1558,11 +1680,8 @@ def export_bills_to_excel(request, branch, bill_type):
     week_online = 0
     
     # Grand Totals
-    grand_billed = 0
     grand_cash = 0
     grand_online = 0
-    grand_paid_till_now = 0
-    grand_balance = 0
     
     # Calculate first day weekday for the month (Sun=0, Mon=1, ..., Sat=6)
     if queryset.exists() and queryset[0].DATE:
@@ -1607,14 +1726,14 @@ def export_bills_to_excel(request, branch, bill_type):
 
             # 2. Insert NEW Week Header
             current_week = week_num
-            ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=11)
+            ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=7)
             week_cell = ws.cell(row=current_row, column=1, value=f"--- WEEK {current_week} ---")
             week_cell.font = Font(bold=True, name="Times New Roman", size=15, color="0000FF") # Blue bold
             week_cell.alignment = Alignment(horizontal="center", vertical="center")
             week_cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid") # Light gray
             
             # Apply borders to the merged week row
-            for c in range(1, 12):
+            for c in range(1, 8):
                 ws.cell(row=current_row, column=c).border = border
                 
             ws.row_dimensions[current_row].height = 20
@@ -1627,12 +1746,8 @@ def export_bills_to_excel(request, branch, bill_type):
             record.BILL_NUMBER,
             record.REGISTRATION_NUMBER,
             record.NAME,
-            float(record.TOTAL_AMOUNT) if record.TOTAL_AMOUNT else 0,
             float(record.CASH_RECEIVED) if record.CASH_RECEIVED else 0,
             float(record.ONLINE_RECEIVED) if record.ONLINE_RECEIVED else 0,
-            float(record.TOTAL_PAID_AMOUNT_TILL_NOW) if record.TOTAL_PAID_AMOUNT_TILL_NOW else 0,
-            float(record.BALANCE) if record.BALANCE else 0,
-            record.PAYMENT_STATUS,
         ]
 
         # Update weekly sums
@@ -1640,11 +1755,8 @@ def export_bills_to_excel(request, branch, bill_type):
         week_online += float(record.ONLINE_RECEIVED or 0)
 
         # Update grand totals
-        grand_billed += float(record.TOTAL_AMOUNT or 0)
         grand_cash += float(record.CASH_RECEIVED or 0)
         grand_online += float(record.ONLINE_RECEIVED or 0)
-        grand_paid_till_now += float(record.TOTAL_PAID_AMOUNT_TILL_NOW or 0)
-        grand_balance += float(record.BALANCE or 0)
 
         # Write record data
         for col, value in enumerate(row_data, start=1):
@@ -1655,7 +1767,7 @@ def export_bills_to_excel(request, branch, bill_type):
             # Alignment rules
             if col in [1, 2, 3, 4]:  # S.NO, DATE, BILL NUMBER, REG NO
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col in [6, 7, 8, 9, 10]:  # Amounts
+            elif col in [6, 7]:  # Amounts
                 cell.alignment = Alignment(horizontal="right", vertical="center")
             elif col == 5:  # NAME
                 cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
@@ -1678,8 +1790,8 @@ def export_bills_to_excel(request, branch, bill_type):
         ws.cell(row=current_row, column=8, value=week_online).font = subtotal_font
         ws.cell(row=current_row, column=8).alignment = Alignment(horizontal="right", vertical="center")
         
-        # Apply fill and borders to the subtotal row (A-K)
-        for c in range(1, 12):
+        # Apply fill and borders to the subtotal row (A-G)
+        for c in range(1, 8):
             cell = ws.cell(row=current_row, column=c)
             cell.fill = subtotal_fill
             cell.border = border
@@ -1691,12 +1803,12 @@ def export_bills_to_excel(request, branch, bill_type):
     # First row - Labels
     footer_row = current_row
     
-    # Define labels and their column ranges (A-K = 11 columns)
+    # Define labels and their column ranges (A-G = 7 columns)
     footer_configs = [
-        ("PREPARED BY", 1, 3),    # A-B
-        ("RECHECKED BY", 4, 5),   # C-E
-        ("APPROVED BY", 6, 8),    # F-H
-        ("VERIFIED BY", 9, 11),   # I-K
+        ("PREPARED BY", 1, 2),    # A-B
+        ("RECHECKED BY", 3, 4),   # C-D
+        ("APPROVED BY", 5, 6),    # E-F
+        ("VERIFIED BY", 7, 7),    # G
     ]
     
     for label, start_col, end_col in footer_configs:
@@ -1725,7 +1837,7 @@ def export_bills_to_excel(request, branch, bill_type):
     ws.row_dimensions[signature_row].height = 45
 
     # === COLUMN WIDTHS ===
-    col_widths = [8, 15, 18, 25, 45, 22, 18, 18, 30, 18, 22]
+    col_widths = [8, 15, 18, 25, 45, 18, 18]
     for i, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 

@@ -1,0 +1,189 @@
+{% extends "logins/base.html" %}
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-lg border-0" style="border-radius: 15px;">
+        <div class="card-header bg-primary text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
+            <h2 class="m-0">{% if action == 'Edit' %}Edit{% else %}Add{% endif %} Tax Invoice - {{ branch }}</h2>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" id="invoice-form">
+                {% csrf_token %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Invoice No</label>
+                        {{ form.INVOICE_NO }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Date</label>
+                        {{ form.DATE }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Bill To (Client Details)</label>
+                        {{ form.BILL_TO }}
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="items-table">
+                        <thead class="table-dark text-center text-uppercase">
+                            <tr>
+                                <th style="width: 80px;">S.NO</th>
+                                <th>DESCRIPTION</th>
+                                <th style="width: 100px;">QTY</th>
+                                <th style="width: 150px;">UNIT PRICE</th>
+                                <th style="width: 180px;">TOTAL VALUE</th>
+                                <th style="width: 50px;">DEL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            {{ formset.management_form }}
+                            {% for item_form in formset %}
+                            <tr class="item-row">
+                                {{ item_form.id }}
+                                <td>{{ item_form.S_NO }}</td>
+                                <td>{{ item_form.DESCRIPTION }}</td>
+                                <td>{{ item_form.QTY }}</td>
+                                <td class="text-end">{{ item_form.UNIT_PRICE }}</td>
+                                <td class="text-end">{{ item_form.TOTAL_VALUE }}</td>
+                                <td class="text-center">{{ item_form.DELETE }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">TOTAL AMOUNT</td>
+                                <td class="text-end p-0">{{ form.TOTAL_AMOUNT }}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">GST 18%</td>
+                                <td class="text-end p-0">{{ form.GST_18 }}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">TOTAL AMOUNT WITH GST 18%</td>
+                                <td class="text-end p-0">{{ form.TOTAL_AMOUNT_WITH_GST }}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">ROUND OFF</td>
+                                <td class="text-end p-0">{{ form.ROUND_OFF }}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold bg-light">GRAND TOTAL</td>
+                                <td class="text-end fw-bold bg-light p-0">{{ form.GRAND_TOTAL }}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="text-start mb-4">
+                    <button type="button" id="add-row" class="btn btn-outline-primary btn-sm">+ Add New Item Row</button>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">AMOUNT IN WORDS</label>
+                    {{ form.AMOUNT_IN_WORDS }}
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-success btn-lg px-5 shadow">Save Tax Invoice</button>
+                    <a href="{% url 'tax_invoice_list' branch %}" class="btn btn-secondary btn-lg px-5 shadow">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control { border-radius: 8px; border: 1px solid #ced4da; padding: 0.5rem 0.75rem; }
+    .form-control:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
+    tfoot input.form-control { border: none; background: transparent; text-align: right; font-weight: bold; }
+    tfoot input.form-control[readonly] { cursor: default; }
+    textarea.form-control { resize: none; }
+    .table th { font-size: 0.9rem; letter-spacing: 0.5px; }
+    .item-row input { text-align: center; }
+    .item-row input[name*="UNIT_PRICE"], .item-row input[name*="TOTAL_VALUE"] { text-align: right; }
+</style>
+
+<script>
+    function calculateInvoice() {
+        let totalAmount = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            const qtyInput = row.querySelector('input[name*="QTY"]');
+            const priceInput = row.querySelector('input[name*="UNIT_PRICE"]');
+            const totalValueInput = row.querySelector('input[name*="TOTAL_VALUE"]');
+            
+            if (qtyInput && priceInput && totalValueInput) {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const totalValue = qty * price;
+                totalValueInput.value = totalValue.toFixed(2);
+                totalAmount += totalValue;
+            }
+        });
+
+        const totalAmountInput = document.querySelector('input[name="TOTAL_AMOUNT"]');
+        const gstInput = document.querySelector('input[name="GST_18"]');
+        const totalWithGstInput = document.querySelector('input[name="TOTAL_AMOUNT_WITH_GST"]');
+        const roundOffInput = document.querySelector('input[name="ROUND_OFF"]');
+        const grandTotalInput = document.querySelector('input[name="GRAND_TOTAL"]');
+
+        if (totalAmountInput) {
+            totalAmountInput.value = totalAmount.toFixed(2);
+            const gst = totalAmount * 0.18;
+            if (gstInput) gstInput.value = gst.toFixed(2);
+            const totalWithGst = totalAmount + gst;
+            if (totalWithGstInput) totalWithGstInput.value = totalWithGst.toFixed(2);
+            
+            const grandTotal = Math.round(totalWithGst);
+            if (grandTotalInput) grandTotalInput.value = grandTotal.toFixed(2);
+            if (roundOffInput) roundOffInput.value = (grandTotal - totalWithGst).toFixed(2);
+        }
+    }
+
+    document.getElementById('invoice-form').addEventListener('input', function(e) {
+        if (e.target.name.includes('QTY') || e.target.name.includes('UNIT_PRICE')) {
+            calculateInvoice();
+        }
+    });
+
+    document.getElementById('add-row').addEventListener('click', function() {
+        const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+        const count = parseInt(totalForms.value);
+        const rows = document.querySelectorAll('.item-row');
+        const newRow = rows[0].cloneNode(true); // Clone the first row as a template
+        
+        newRow.querySelectorAll('input, textarea').forEach(el => {
+            // Update names and IDs
+            el.name = el.name.replace(/-\d+-/, '-' + count + '-');
+            el.id = el.id.replace(/-\d+-/, '-' + count + '-');
+            el.value = '';
+            // If it's the S_NO, we can increment it
+            if (el.name.includes('S_NO')) {
+                el.value = count + 1;
+            }
+        });
+        
+        document.getElementById('items-body').appendChild(newRow);
+        totalForms.value = count + 1;
+    });
+
+    // Initial styling and calculation
+    document.querySelectorAll('#invoice-form input, #invoice-form textarea').forEach(el => {
+        if (!el.classList.contains('btn') && el.type !== 'hidden' && el.type !== 'checkbox') {
+            el.classList.add('form-control');
+        }
+    });
+    
+    // Ensure numeric fields are indeed type="text" as requested
+    document.querySelectorAll('input[type="number"]').forEach(el => {
+        el.type = 'text';
+    });
+
+    calculateInvoice();
+</script>
+{% endblock %}

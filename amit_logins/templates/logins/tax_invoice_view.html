@@ -1,0 +1,156 @@
+{% extends "logins/base.html" %}
+{% block content %}
+<div class="container my-5 no-print">
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'tax_invoice_list' branch %}" class="btn btn-secondary">Back to List</a>
+        <button onclick="window.print()" class="btn btn-primary">Print Invoice</button>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="invoice-container mx-auto" style="max-width: 900px; border: 2px solid #000; padding: 0; background: #fff; font-family: 'Times New Roman', serif; color: #000;">
+        <!-- Header -->
+        <div style="border-bottom: 2px solid #000; text-align: center; padding: 10px;">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold; text-decoration: underline;">TAX INVOICE</h1>
+        </div>
+
+        <!-- Info Section -->
+        <div style="display: flex; border-bottom: 2px solid #000;">
+            <div style="flex: 1; padding: 10px; border-right: 2px solid #000;">
+                <p style="margin: 0; font-weight: bold; font-size: 16px;">SELLER</p>
+                <p style="margin: 0; font-weight: bold; color: #000;">ATHITH MITHRA INDUSTRIAL TECHNOLOGIES (AMIT) PVT LTD</p>
+                <p style="margin: 0;">No.7/2, SLB School South Road, Ramavarmapuram, Nagercoil, Kanyakumari District, Tamil Nadu, India - 629 001.</p>
+                <p style="margin: 0;">Contact: +91 98405 11458</p>
+                <p style="margin: 0; font-weight: bold;">GST : 33AAYCA9919P1ZK</p>
+                <p style="margin: 0; font-weight: bold;">CIN : U26517TN2023PTC161676</p>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="padding: 10px; border-bottom: 2px solid #000; text-align: right;">
+                    <p style="margin: 0; font-weight: bold;">INVOICE NO : {{ invoice.INVOICE_NO }}</p>
+                    <p style="margin: 0; font-weight: bold;">DATE : {{ invoice.DATE|date:"d-m-Y" }}</p>
+                </div>
+                <div style="padding: 10px; flex-grow: 1;">
+                    <p style="margin: 0; font-weight: bold; font-size: 16px;">BILL TO</p>
+                    <p style="margin: 0; white-space: pre-wrap;">{{ invoice.BILL_TO }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table style="width: 100%; border-collapse: collapse; border-bottom: 2px solid #000;">
+            <thead>
+                <tr style="border-bottom: 2px solid #000;">
+                    <th style="padding: 10px; border-right: 2px solid #000; width: 60px;">S.NO</th>
+                    <th style="padding: 10px; border-right: 2px solid #000;">DESCRIPTION</th>
+                    <th style="padding: 10px; border-right: 2px solid #000; width: 60px;">QTY</th>
+                    <th style="padding: 10px; border-right: 2px solid #000; width: 140px;">UNIT PRICE</th>
+                    <th style="padding: 10px; width: 140px;">TOTAL VALUE</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items.all %}
+                <tr style="min-height: 50px;">
+                    <td style="padding: 10px; border-right: 2px solid #000; text-align: center; vertical-align: top;">{{ item.S_NO }}</td>
+                    <td style="padding: 10px; border-right: 2px solid #000; vertical-align: top;">{{ item.DESCRIPTION|linebreaksbr }}</td>
+                    <td style="padding: 10px; border-right: 2px solid #000; text-align: center; vertical-align: top;">{{ item.QTY }}</td>
+                    <td style="padding: 10px; border-right: 2px solid #000; text-align: right; vertical-align: top;">₹ {{ item.UNIT_PRICE }}</td>
+                    <td style="padding: 10px; text-align: right; vertical-align: top;">₹ {{ item.TOTAL_VALUE }}</td>
+                </tr>
+                {% endfor %}
+                <!-- Spacer rows to keep dynamic height if needed -->
+                <tr style="height: 100px;">
+                    <td style="border-right: 2px solid #000;"></td>
+                    <td style="border-right: 2px solid #000;"></td>
+                    <td style="border-right: 2px solid #000;"></td>
+                    <td style="border-right: 2px solid #000;"></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div style="display: flex; flex-direction: column; width: 100%;">
+            <div style="display: flex; border-bottom: 2px solid #000;">
+                <div style="flex: 1; border-right: 2px solid #000;"></div>
+                <div style="width: 280px; padding: 5px 10px; border-right: 2px solid #000; text-align: right; font-weight: bold;">TOTAL AMOUNT</div>
+                <div style="width: 140px; padding: 5px 10px; text-align: right; font-weight: bold;">₹ {{ invoice.TOTAL_AMOUNT }}</div>
+            </div>
+            <div style="display: flex; border-bottom: 2px solid #000;">
+                <div style="flex: 1; border-right: 2px solid #000;"></div>
+                <div style="width: 280px; padding: 5px 10px; border-right: 2px solid #000; text-align: right; font-weight: bold;">GST 18%</div>
+                <div style="width: 140px; padding: 5px 10px; text-align: right; font-weight: bold;">₹ {{ invoice.GST_18 }}</div>
+            </div>
+            <div style="display: flex; border-bottom: 2px solid #000; font-size: 18px;">
+                <div style="flex: 1; border-right: 2px solid #000;"></div>
+                <div style="width: 280px; padding: 5px 10px; border-right: 2px solid #000; text-align: right; font-weight: bold;">TOTAL AMOUNT WITH GST 18%</div>
+                <div style="width: 140px; padding: 5px 10px; text-align: right; font-weight: bold;">₹ {{ invoice.TOTAL_AMOUNT_WITH_GST }}</div>
+            </div>
+            <div style="display: flex; border-bottom: 2px solid #000;">
+                <div style="flex: 1; border-right: 2px solid #000;"></div>
+                <div style="width: 280px; padding: 5px 10px; border-right: 2px solid #000; text-align: right; font-weight: bold;">ROUND OFF</div>
+                <div style="width: 140px; padding: 5px 10px; text-align: right; font-weight: bold;">{% if invoice.ROUND_OFF < 0 %}({% endif %}{{ invoice.ROUND_OFF }}{% if invoice.ROUND_OFF < 0 %}){% endif %}</div>
+            </div>
+            <div style="display: flex; border-bottom: 2px solid #000; font-size: 20px;">
+                <div style="flex: 1; border-right: 2px solid #000;"></div>
+                <div style="width: 280px; padding: 5px 10px; border-right: 2px solid #000; text-align: right; font-weight: bold;">GRAND TOTAL</div>
+                <div style="width: 140px; padding: 5px 10px; text-align: right; font-weight: bold;">₹ {{ invoice.GRAND_TOTAL }}</div>
+            </div>
+        </div>
+
+        <!-- Words -->
+        <div style="padding: 10px; border-bottom: 2px solid #000;">
+            <p style="margin: 0;"><span style="font-weight: bold;">AMOUNT IN WORDS:</span> {{ invoice.AMOUNT_IN_WORDS|upper }} ONLY</p>
+        </div>
+
+        <!-- Footer Info -->
+        <div style="display: flex; border-bottom: 2px solid #000; min-height: 150px;">
+            <div style="flex: 1; border-right: 2px solid #000; padding: 10px;">
+                <p style="margin: 0; font-weight: bold; text-decoration: underline;">BANK ACCOUNT DETAILS</p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 5px;">
+                    <tr><td style="width: 100px;">Account Name</td><td>: ATHITH MITHRA INDUSTRIAL TECHNOLOGIES (AMIT) PVT LTD.</td></tr>
+                    <tr><td>Bank Name</td><td>: CANARA BANK</td></tr>
+                    <tr><td>Account Number</td><td>: 120026789274</td></tr>
+                    <tr><td>IFSC</td><td>: CNRB0001112</td></tr>
+                    <tr><td>Account Type</td><td>: OD</td></tr>
+                    <tr><td>Branch</td><td>: MEENAKSHIPURAM, NAGERCOIL.</td></tr>
+                </table>
+            </div>
+            <div style="flex: 1; padding: 10px;">
+                <p style="margin: 0; font-weight: bold; text-decoration: underline;">TERMS & CONDITIONS</p>
+                <ul style="margin: 5px 0 0 20px; padding: 0; font-size: 14px;">
+                    <li>Goods once sold will not be taken back.</li>
+                    <li>Delivery Charges should be in the hands of Customer.</li>
+                    <li>Any damages during Transport, report immediate in front of Driver/ Delivery Person.</li>
+                    <li>Warranty norms as per the product with guide.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div style="display: flex; min-height: 100px;">
+            <div style="flex: 1; border-right: 2px solid #000; display: flex; flex-direction: column; justify-content: space-between; text-align: center; padding: 5px;">
+                <p style="margin: 0; font-weight: bold;">PREPARED BY</p>
+                <div style="height: 40px;"></div>
+            </div>
+            <div style="flex: 1; border-right: 2px solid #000; display: flex; flex-direction: column; justify-content: space-between; text-align: center; padding: 5px;">
+                <p style="margin: 0; font-weight: bold;">SEAL</p>
+                <div style="height: 40px;"></div>
+            </div>
+            <div style="flex: 1.5; display: flex; flex-direction: column; justify-content: space-between; text-align: center; padding: 5px;">
+                <p style="margin: 0; font-weight: bold;">FOR AMIT INDUSTRIAL TECHNOLOGIES</p>
+                <div style="height: 40px;"></div>
+                <p style="margin: 0; font-weight: bold; font-size: 12px; border-top: 1px solid #000; padding-top: 2px;">AUTHORISED SIGNATORY</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        body { background: white; }
+        .container { width: 100%; max-width: 100%; margin: 0; padding: 0; }
+        @page { margin: 1cm; }
+    }
+</style>
+{% endblock %}

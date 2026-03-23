@@ -70,5 +70,10 @@ urlpatterns = [
     views.export_bills_to_excel,
     name='export_bills_to_excel'
 ),
+    path('tax-invoice/<str:branch>/', views.tax_invoice_list, name='tax_invoice_list'),
+    path('tax-invoice/add/<str:branch>/', views.add_tax_invoice, name='add_tax_invoice'),
+    path('tax-invoice/edit/<str:branch>/<int:invoice_id>/', views.edit_tax_invoice, name='edit_tax_invoice'),
+    path('tax-invoice/delete/<str:branch>/<int:invoice_id>/', views.delete_tax_invoice, name='delete_tax_invoice'),
+    path('tax-invoice/view/<str:branch>/<int:invoice_id>/', views.view_tax_invoice, name='view_tax_invoice'),
 
 ]
