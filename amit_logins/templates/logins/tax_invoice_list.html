@@ -14,7 +14,6 @@
                 <tr>
                     <th>Invoice No</th>
                     <th>Date</th>
-                    <th>Bill To</th>
                     <th>Grand Total</th>
                     <th>Actions</th>
                 </tr>
@@ -24,19 +23,19 @@
                 <tr>
                     <td>{{ invoice.INVOICE_NO }}</td>
                     <td>{{ invoice.DATE }}</td>
-                    <td>{{ invoice.BILL_TO|truncatechars:50 }}</td>
                     <td>₹{{ invoice.GRAND_TOTAL }}</td>
                     <td>
                         <a href="{% url 'view_tax_invoice' branch invoice.id %}" class="btn btn-info btn-sm">View</a>
                         <a href="{% url 'edit_tax_invoice' branch invoice.id %}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{% url 'download_tax_invoice_word' branch invoice.id %}" class="btn btn-success btn-sm">Download</a>
                         <a href="{% url 'delete_tax_invoice' branch invoice.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this invoice?')">Delete</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No tax invoices found.</td>
+                    <td colspan="4" class="text-center">No tax invoices found.</td>
                 </tr>
-                {% endfor %}
+{% endfor %}
             </tbody>
         </table>
     </div>

@@ -75,5 +75,6 @@ urlpatterns = [
     path('tax-invoice/edit/<str:branch>/<int:invoice_id>/', views.edit_tax_invoice, name='edit_tax_invoice'),
     path('tax-invoice/delete/<str:branch>/<int:invoice_id>/', views.delete_tax_invoice, name='delete_tax_invoice'),
     path('tax-invoice/view/<str:branch>/<int:invoice_id>/', views.view_tax_invoice, name='view_tax_invoice'),
+    path('tax-invoice/download/<str:branch>/<int:invoice_id>/', views.download_tax_invoice_word, name='download_tax_invoice_word'),
 
 ]

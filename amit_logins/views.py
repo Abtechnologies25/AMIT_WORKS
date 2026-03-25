@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect,get_object_or_404
+from django.template.loader import render_to_string
 from decimal import Decimal
 from datetime import datetime, date
 import pandas as pd
@@ -799,128 +800,6 @@ def download_report_payment_voucher(request, model, branch, filename):
     ws.row_dimensions[current_row].height = 25
     ws.merge_cells(start_row=current_row, start_column=4, end_row=current_row, end_column=5)
     ws.cell(row=current_row, column=4, value="TOTAL AMOUNT").font = data_font_bold
-
-def get_tax_invoice_model(branch):
-    branch = branch.upper()
-    if branch == 'NAGERCOIL':
-        return NAGERCOILTAXINVOICE, NagercoilTaxInvoiceForm, NagercoilTaxInvoiceItemFormSet
-    elif branch == 'TIRUNELVELI':
-        return TIRUNELVELITAXINVOICE, TirunelveliTaxInvoiceForm, TirunelveliTaxInvoiceItemFormSet
-    elif branch == 'PUDUKOTTAI':
-        return PUDUKOTTAITAXINVOICE, PudukottaiTaxInvoiceForm, PudukottaiTaxInvoiceItemFormSet
-    elif branch == 'CHENNAI':
-        return CHENNAITAXINVOICE, ChennaiTaxInvoiceForm, ChennaiTaxInvoiceItemFormSet
-    return None, None, None
-
-@login_required(login_url='login')
-def tax_invoice_list(request, branch):
-    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
-    if not Model:
-        return redirect('dashboard')
-    
-    invoices = Model.objects.all().order_by('-DATE', '-INVOICE_NO')
-    return render(request, 'logins/tax_invoice_list.html', {
-        'invoices': invoices,
-        'branch': branch
-    })
-
-@login_required(login_url='login')
-def add_tax_invoice(request, branch):
-    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
-    if not Model:
-        return redirect('dashboard')
-    
-    if request.method == 'POST':
-        form = Form(request.POST)
-        formset = ItemFormSet(request.POST)
-        if form.is_valid() and formset.is_valid():
-            invoice = form.save(commit=False)
-            invoice.save()
-            items = formset.save(commit=False)
-            total_amount = Decimal('0.00')
-            for item in items:
-                item.invoice = invoice
-                item.TOTAL_VALUE = Decimal(str(item.QTY)) * Decimal(str(item.UNIT_PRICE))
-                item.save()
-                total_amount += item.TOTAL_VALUE
-            
-            # Recalculate totals
-            invoice.TOTAL_AMOUNT = total_amount
-            invoice.GST_18 = (total_amount * Decimal('0.18')).quantize(Decimal('0.01'))
-            invoice.TOTAL_AMOUNT_WITH_GST = invoice.TOTAL_AMOUNT + invoice.GST_18
-            invoice.GRAND_TOTAL = Decimal(str(round(float(invoice.TOTAL_AMOUNT_WITH_GST))))
-            invoice.ROUND_OFF = (invoice.GRAND_TOTAL - invoice.TOTAL_AMOUNT_WITH_GST).quantize(Decimal('0.01'))
-            invoice.save()
-            return redirect('tax_invoice_list', branch=branch)
-    else:
-        form = Form()
-        formset = ItemFormSet()
-    
-    return render(request, 'logins/tax_invoice_add.html', {
-        'form': form,
-        'formset': formset,
-        'branch': branch
-    })
-
-@login_required(login_url='login')
-def view_tax_invoice(request, branch, invoice_id):
-    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
-    if not Model:
-        return redirect('dashboard')
-    
-    invoice = get_object_or_404(Model, id=invoice_id)
-    return render(request, 'logins/tax_invoice_view.html', {
-        'invoice': invoice,
-        'branch': branch
-    })
-
-@login_required(login_url='login')
-def edit_tax_invoice(request, branch, invoice_id):
-    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
-    if not Model:
-        return redirect('dashboard')
-    
-    invoice = get_object_or_404(Model, id=invoice_id)
-    if request.method == 'POST':
-        form = Form(request.POST, instance=invoice)
-        formset = ItemFormSet(request.POST, instance=invoice)
-        if form.is_valid() and formset.is_valid():
-            form.save()
-            items = formset.save(commit=False)
-            for item in items:
-                item.TOTAL_VALUE = Decimal(str(item.QTY)) * Decimal(str(item.UNIT_PRICE))
-                item.save()
-            
-            # Recalculate totals
-            all_items = invoice.items.all()
-            total_amount = sum(item.TOTAL_VALUE for item in all_items)
-            invoice.TOTAL_AMOUNT = total_amount
-            invoice.GST_18 = (total_amount * Decimal('0.18')).quantize(Decimal('0.01'))
-            invoice.TOTAL_AMOUNT_WITH_GST = invoice.TOTAL_AMOUNT + invoice.GST_18
-            invoice.GRAND_TOTAL = Decimal(str(round(float(invoice.TOTAL_AMOUNT_WITH_GST))))
-            invoice.ROUND_OFF = (invoice.GRAND_TOTAL - invoice.TOTAL_AMOUNT_WITH_GST).quantize(Decimal('0.01'))
-            invoice.save()
-            return redirect('tax_invoice_list', branch=branch)
-    else:
-        form = Form(instance=invoice)
-        formset = ItemFormSet(instance=invoice)
-    
-    return render(request, 'logins/tax_invoice_add.html', {
-        'form': form,
-        'formset': formset,
-        'branch': branch,
-        'action': 'Edit'
-    })
-
-@login_required(login_url='login')
-def delete_tax_invoice(request, branch, invoice_id):
-    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
-    if not Model:
-        return redirect('dashboard')
-    
-    invoice = get_object_or_404(Model, id=invoice_id)
-    invoice.delete()
-    return redirect('tax_invoice_list', branch=branch)
     ws.cell(row=current_row, column=4).alignment = right_align_v
     ws.cell(row=current_row, column=6, value=total_online).font = data_font_bold
     ws.cell(row=current_row, column=6).alignment = right_align_v
@@ -1873,3 +1752,119 @@ def export_bills_to_excel(request, branch, bill_type):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
+
+def get_tax_invoice_model(branch):
+    branch = branch.upper()
+    if branch == 'NAGERCOIL':
+        return NAGERCOILTAXINVOICE, NagercoilTaxInvoiceForm, NagercoilTaxInvoiceItemFormSet
+    elif branch == 'TIRUNELVELI':
+        return TIRUNELVELITAXINVOICE, TirunelveliTaxInvoiceForm, TirunelveliTaxInvoiceItemFormSet
+    elif branch == 'PUDUKOTTAI':
+        return PUDUKOTTAITAXINVOICE, PudukottaiTaxInvoiceForm, PudukottaiTaxInvoiceItemFormSet
+    elif branch == 'CHENNAI':
+        return CHENNAITAXINVOICE, ChennaiTaxInvoiceForm, ChennaiTaxInvoiceItemFormSet
+    return None, None, None
+
+@login_required(login_url='login')
+def tax_invoice_list(request, branch):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoices = Model.objects.all().order_by('-DATE', '-INVOICE_NO')
+    return render(request, 'logins/tax_invoice_list.html', {
+        'invoices': invoices,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def add_tax_invoice(request, branch):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = Form(request.POST)
+        formset = ItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            invoice = form.save()
+            items = formset.save(commit=False)
+            for item in items:
+                item.invoice = invoice
+                item.save()
+            return redirect('tax_invoice_list', branch=branch)
+    else:
+        form = Form()
+        formset = ItemFormSet()
+    
+    return render(request, 'logins/tax_invoice_add.html', {
+        'form': form,
+        'formset': formset,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def view_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    return render(request, 'logins/tax_invoice_view.html', {
+        'invoice': invoice,
+        'branch': branch
+    })
+
+@login_required(login_url='login')
+def edit_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    if request.method == 'POST':
+        form = Form(request.POST, instance=invoice)
+        formset = ItemFormSet(request.POST, instance=invoice)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('tax_invoice_list', branch=branch)
+    else:
+        form = Form(instance=invoice)
+        formset = ItemFormSet(instance=invoice)
+    
+    return render(request, 'logins/tax_invoice_add.html', {
+        'form': form,
+        'formset': formset,
+        'branch': branch,
+        'action': 'Edit'
+    })
+
+@login_required(login_url='login')
+def delete_tax_invoice(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    invoice.delete()
+    return redirect('tax_invoice_list', branch=branch)
+
+from .docx_utils import generate_tax_invoice_docx
+
+@login_required(login_url='login')
+def download_tax_invoice_word(request, branch, invoice_id):
+    Model, Form, ItemFormSet = get_tax_invoice_model(branch)
+    if not Model:
+        return redirect('dashboard')
+    
+    invoice = get_object_or_404(Model, id=invoice_id)
+    
+    # Generate native Word document
+    docx_bytes = generate_tax_invoice_docx(invoice)
+    
+    # Construct Word document response
+    response = HttpResponse(docx_bytes, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = f'attachment; filename="Tax_Invoice_{invoice.INVOICE_NO}.docx"'
+    
+    return response

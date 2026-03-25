@@ -172,34 +172,73 @@ for model in [ NAGERCOILINTERNSHIPBILL, NAGERCOILPRODUCTBILL, TIRUNELVELIINTERNS
     form_class = type(f"{model.__name__}Form", (BaseBillForm,), {'Meta': type('Meta', (), {'model': model, **BaseBillForm.Meta.__dict__})})
     globals()[form_class.__name__] = form_class
 
+from decimal import Decimal, InvalidOperation
+
 class AbstractTaxInvoiceForm(forms.ModelForm):
+    TOTAL_AMOUNT = forms.CharField(required=False)
+    GST_18 = forms.CharField(required=False)
+    TOTAL_AMOUNT_WITH_GST = forms.CharField(required=False)
+    ROUND_OFF = forms.CharField(required=False)
+    GRAND_TOTAL = forms.CharField(required=False)
+    BILL_TO = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Client Billing Address / Details'}), required=False)
+
     class Meta:
         fields = [
-            'INVOICE_NO', 'DATE', 'BILL_TO', 
+            'INVOICE_NO', 'DATE', 'BILL_TO',
             'TOTAL_AMOUNT', 'GST_18', 'TOTAL_AMOUNT_WITH_GST', 
             'ROUND_OFF', 'GRAND_TOTAL', 'AMOUNT_IN_WORDS'
         ]
         widgets = {
             'DATE': forms.DateInput(attrs={'type': 'date'}),
-            'BILL_TO': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Bill To Details'}),
-            'TOTAL_AMOUNT': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'GST_18': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'TOTAL_AMOUNT_WITH_GST': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'ROUND_OFF': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'GRAND_TOTAL': forms.TextInput(attrs={'readonly': 'readonly'}),
             'AMOUNT_IN_WORDS': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Amount in Words'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        numeric_fields = ['TOTAL_AMOUNT', 'GST_18', 'TOTAL_AMOUNT_WITH_GST', 'ROUND_OFF', 'GRAND_TOTAL']
+        for field in numeric_fields:
+            val = cleaned_data.get(field)
+            if val:
+                try:
+                    cleaned_data[field] = Decimal(val.replace(',', ''))
+                except (InvalidOperation, ValueError):
+                    self.add_error(field, "Invalid number format")
+        return cleaned_data
+
 class AbstractTaxInvoiceItemForm(forms.ModelForm):
+    S_NO = forms.CharField()
+    QTY = forms.CharField()
+    UNIT_PRICE = forms.CharField()
+    TOTAL_VALUE = forms.CharField()
+
     class Meta:
         fields = ['S_NO', 'DESCRIPTION', 'QTY', 'UNIT_PRICE', 'TOTAL_VALUE']
         widgets = {
-            'S_NO': forms.TextInput(),
             'DESCRIPTION': forms.Textarea(attrs={'rows': 1, 'placeholder': 'Item Description'}),
-            'QTY': forms.TextInput(),
-            'UNIT_PRICE': forms.TextInput(),
-            'TOTAL_VALUE': forms.TextInput(attrs={'readonly': 'readonly'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Clean numeric fields
+        field_conversions = {
+            'S_NO': int,
+            'QTY': int,
+            'UNIT_PRICE': Decimal,
+            'TOTAL_VALUE': Decimal
+        }
+        for field, target_type in field_conversions.items():
+            val = cleaned_data.get(field)
+            if val:
+                try:
+                    raw_val = val.replace(',', '')
+                    if '.' in raw_val and target_type == int:
+                        # Handle case where user types 1.00 for an integer
+                        cleaned_data[field] = int(float(raw_val))
+                    else:
+                        cleaned_data[field] = target_type(raw_val)
+                except (InvalidOperation, ValueError, TypeError):
+                    self.add_error(field, f"Invalid {field} format")
+        return cleaned_data
 
 class NagercoilTaxInvoiceForm(AbstractTaxInvoiceForm):
     class Meta(AbstractTaxInvoiceForm.Meta):

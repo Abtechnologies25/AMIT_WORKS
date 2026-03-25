@@ -289,7 +289,12 @@ class CHENNAIPRODUCTBILL(AbstractBill):
 class AbstractTaxInvoice(models.Model):
     INVOICE_NO = models.CharField(max_length=100)
     DATE = models.DateField()
-    BILL_TO = models.TextField()
+    BILL_TO = models.TextField(default="""AB TECHNOLOGIES
+14, First and Second Floor, Prajam Complex,
+S.T. Hindu College Road, Chettikulam, Nagercoil,
+Kanyakumari District, Tamil Nadu, India - 629 002.
+Contact: +919789224844
+GST : 33CKGPK5591Q1ZG""")
     TOTAL_AMOUNT = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     GST_18 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     TOTAL_AMOUNT_WITH_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0)
