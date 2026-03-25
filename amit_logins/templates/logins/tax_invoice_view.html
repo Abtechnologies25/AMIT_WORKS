@@ -21,18 +21,14 @@
             <h4 class="mb-0">Invoice Preview: {{ invoice.INVOICE_NO }}</h4>
         </div>
         <div class="card-body p-4">
-            <div class="row mb-4">
-                <div class="col-sm-4">
+            <div class="row mb-4 text-center">
+                <div class="col-sm-6">
                     <p class="mb-1 text-muted">Invoice No:</p>
                     <h5 class="fw-bold">{{ invoice.INVOICE_NO }}</h5>
                 </div>
-                <div class="col-sm-4 text-center">
+                <div class="col-sm-6">
                     <p class="mb-1 text-muted">Invoice Date:</p>
                     <h5 class="fw-bold">{{ invoice.DATE|date:"d-m-Y" }}</h5>
-                </div>
-                <div class="col-sm-4 text-sm-end">
-                    <p class="mb-1 text-muted">Bill To:</p>
-                    <div class="fw-bold" style="white-space: pre-wrap;">{{ invoice.BILL_TO }}</div>
                 </div>
             </div>
 

@@ -180,11 +180,10 @@ class AbstractTaxInvoiceForm(forms.ModelForm):
     TOTAL_AMOUNT_WITH_GST = forms.CharField(required=False)
     ROUND_OFF = forms.CharField(required=False)
     GRAND_TOTAL = forms.CharField(required=False)
-    BILL_TO = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Client Billing Address / Details'}), required=False)
 
     class Meta:
         fields = [
-            'INVOICE_NO', 'DATE', 'BILL_TO',
+            'INVOICE_NO', 'DATE',
             'TOTAL_AMOUNT', 'GST_18', 'TOTAL_AMOUNT_WITH_GST', 
             'ROUND_OFF', 'GRAND_TOTAL', 'AMOUNT_IN_WORDS'
         ]

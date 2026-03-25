@@ -22,7 +22,7 @@
                 {% for invoice in invoices %}
                 <tr>
                     <td>{{ invoice.INVOICE_NO }}</td>
-                    <td>{{ invoice.DATE }}</td>
+                    <td>{{ invoice.DATE|date:"d/m/Y" }}</td>
                     <td>₹{{ invoice.GRAND_TOTAL }}</td>
                     <td>
                         <a href="{% url 'view_tax_invoice' branch invoice.id %}" class="btn btn-info btn-sm">View</a>
