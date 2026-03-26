@@ -199,7 +199,9 @@ class AbstractTaxInvoiceForm(forms.ModelForm):
             val = cleaned_data.get(field)
             if val:
                 try:
-                    cleaned_data[field] = Decimal(val.replace(',', ''))
+                    # Handle commas and the '+' prefix from JS
+                    cleaned_val = val.replace(',', '').replace('+', '')
+                    cleaned_data[field] = Decimal(cleaned_val)
                 except (InvalidOperation, ValueError):
                     self.add_error(field, "Invalid number format")
         return cleaned_data

@@ -11,7 +11,7 @@
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
-                <tr>
+                <tr class="text-center text-uppercase">
                     <th>Invoice No</th>
                     <th>Date</th>
                     <th>Grand Total</th>
@@ -20,11 +20,11 @@
             </thead>
             <tbody>
                 {% for invoice in invoices %}
-                <tr>
-                    <td>{{ invoice.INVOICE_NO }}</td>
-                    <td>{{ invoice.DATE|date:"d/m/Y" }}</td>
-                    <td>₹{{ invoice.GRAND_TOTAL }}</td>
-                    <td>
+                <tr >
+                    <td class="text-center">{{ invoice.INVOICE_NO }}</td>
+                    <td class="text-center">{{ invoice.DATE|date:"d/m/Y" }}</td>
+                    <td class="text-end">₹{{ invoice.GRAND_TOTAL }}</td>
+                    <td class="text-center">
                         <a href="{% url 'view_tax_invoice' branch invoice.id %}" class="btn btn-info btn-sm">View</a>
                         <a href="{% url 'edit_tax_invoice' branch invoice.id %}" class="btn btn-warning btn-sm">Edit</a>
                         <a href="{% url 'download_tax_invoice_word' branch invoice.id %}" class="btn btn-success btn-sm">Download</a>

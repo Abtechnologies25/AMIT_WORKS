@@ -2,8 +2,8 @@
 {% block content %}
 <div class="container my-5">
     <div class="card shadow-lg border-0" style="border-radius: 15px;">
-        <div class="card-header bg-primary text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
-            <h2 class="m-0">{% if action == 'Edit' %}Edit{% else %}Add{% endif %} Tax Invoice - {{ branch }}</h2>
+        <div class="card-header bg-dark text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
+            <h2 class="m-0 text-uppercase">{% if action == 'Edit' %}Edit{% else %}Add{% endif %} Tax Invoice - {{ branch }}</h2>
         </div>
         <div class="card-body p-4">
             <form method="post" id="invoice-form">
@@ -23,12 +23,12 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Invoice No</label>
+                        <label class="form-label fw-bold text-uppercase">Invoice No</label>
                         {{ form.INVOICE_NO }}
                         <div class="text-danger Small">{{ form.INVOICE_NO.errors }}</div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Date</label>
+                        <label class="form-label fw-bold text-uppercase">Date</label>
                         {{ form.DATE }}
                         <div class="text-danger Small">{{ form.DATE.errors }}</div>
                     </div>
@@ -137,6 +137,87 @@
 </style>
 
 <script>
+    // Multi-row calculation logic
+    function calculateInvoice() {
+        let totalAmount = 0;
+        const visibleRows = document.querySelectorAll('.item-row:not([style*="display: none"])');
+        
+        visibleRows.forEach((row, index) => {
+            const snoInput = row.querySelector('input[name*="S_NO"]');
+            const qtyInput = row.querySelector('input[name*="QTY"]');
+            const priceInput = row.querySelector('input[name*="UNIT_PRICE"]');
+            const totalInput = row.querySelector('input[name*="TOTAL_VALUE"]');
+            
+            if (snoInput) {
+                snoInput.value = index + 1;
+                snoInput.readOnly = true;
+            }
+
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const rowTotal = qty * price;
+            
+            totalInput.value = rowTotal.toFixed(2);
+            totalInput.readOnly = true;
+            totalAmount += rowTotal;
+        });
+
+        const totalAmountInput = document.getElementById('id_TOTAL_AMOUNT');
+        const gstInput = document.getElementById('id_GST_18');
+        const totalWithGstInput = document.getElementById('id_TOTAL_AMOUNT_WITH_GST');
+        const roundOffInput = document.getElementById('id_ROUND_OFF');
+        const grandTotalInput = document.getElementById('id_GRAND_TOTAL');
+        const wordsInput = document.getElementById('id_AMOUNT_IN_WORDS');
+
+        totalAmountInput.value = totalAmount.toFixed(2);
+        
+        const gst = totalAmount * 0.18;
+        gstInput.value = gst.toFixed(2);
+        
+        const totalWithGst = totalAmount + gst;
+        totalWithGstInput.value = totalWithGst.toFixed(2);
+        
+        const grandTotal = Math.round(totalWithGst);
+        grandTotalInput.value = grandTotal.toFixed(2);
+        
+        const roundOff = (grandTotal - totalWithGst).toFixed(2);
+        roundOffInput.value = (roundOff >= 0 ? "+" : "") + roundOff;
+
+        if (wordsInput) {
+            wordsInput.value = numberToWords(grandTotal) + " ONLY";
+        }
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return 'ZERO ';
+        const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+        const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        
+        const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+        if (!n) return '';
+        let str = '';
+        str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+        str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+        str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+        str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+        str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+        return str.trim().toUpperCase();
+    }
+
+    // Attach listeners
+    document.getElementById('items-body').addEventListener('input', function(e) {
+        if (e.target.name.includes('QTY') || e.target.name.includes('UNIT_PRICE')) {
+            calculateInvoice();
+        }
+    });
+
+    // Make calculated summary fields read-only
+    const readonlyFields = ['id_TOTAL_AMOUNT', 'id_GST_18', 'id_TOTAL_AMOUNT_WITH_GST', 'id_ROUND_OFF', 'id_GRAND_TOTAL'];
+    readonlyFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.readOnly = true;
+    });
+
     document.getElementById('items-body').addEventListener('click', function(e) {
         if (e.target.classList.contains('delete-row-btn')) {
             const row = e.target.closest('.item-row');
@@ -152,6 +233,7 @@
                     const totalFormsCount = document.getElementById('id_items-TOTAL_FORMS');
                     totalFormsCount.value = parseInt(totalFormsCount.value) - 1;
                 }
+                calculateInvoice(); // Recalculate after delete
             } else {
                 alert("At least one row is required.");
             }
@@ -176,11 +258,17 @@
             if (el.type === 'checkbox') {
                 el.checked = false;
             }
+            // Ensure newly cloned TOTAL_VALUE is also read-only if we decide so, but item total is usually edittable but here we automate it.
+            if (el.name.includes('TOTAL_VALUE')) el.readOnly = true;
         });
         
         document.getElementById('items-body').appendChild(newRow);
         totalForms.value = count + 1;
+        // No need to recalculate yet, just wait for input
     });
+
+    // Initial setup for existing rows
+    document.querySelectorAll('input[name*="TOTAL_VALUE"]').forEach(el => el.readOnly = true);
 
     // Styling
     document.querySelectorAll('#invoice-form input, #invoice-form textarea').forEach(el => {
@@ -188,5 +276,10 @@
             el.classList.add('form-control');
         }
     });
+
+    // Run initial calculation if editing
+    if (document.querySelector('.item-row input[value]')) {
+        calculateInvoice();
+    }
 </script>
 {% endblock %}

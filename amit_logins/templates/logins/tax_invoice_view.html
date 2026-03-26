@@ -2,38 +2,25 @@
 {% block content %}
 <div class="container my-4 no-print">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{% url 'tax_invoice_list' branch %}" class="btn btn-outline-secondary">
+        <a href="{% url 'tax_invoice_list' branch %}" class="btn btn-secondary">
             Back to List
         </a>
         <div class="d-flex gap-2">
             <a href="{% url 'download_tax_invoice_word' branch invoice.id %}" class="btn btn-primary">
                 Download as Word
             </a>
-            <button onclick="window.print()" class="btn btn-success">
-                Print Professional Invoice
-            </button>
         </div>
     </div>
 
     <!-- Simple Data Preview (Screen Only) -->
     <div class="card shadow-sm mb-5">
-        <div class="card-header bg-light py-3">
-            <h4 class="mb-0">Invoice Preview: {{ invoice.INVOICE_NO }}</h4>
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">INVOICE NO: <span class="fw-bold">{{ invoice.INVOICE_NO }}</span></h5>
+            <h5 class="mb-0">DATE: <span class="fw-bold">{{ invoice.DATE|date:"d-m-Y" }}</span></h5>
         </div>
         <div class="card-body p-4">
-            <div class="row mb-4 text-center">
-                <div class="col-sm-6">
-                    <p class="mb-1 text-muted">Invoice No:</p>
-                    <h5 class="fw-bold">{{ invoice.INVOICE_NO }}</h5>
-                </div>
-                <div class="col-sm-6">
-                    <p class="mb-1 text-muted">Invoice Date:</p>
-                    <h5 class="fw-bold">{{ invoice.DATE|date:"d-m-Y" }}</h5>
-                </div>
-            </div>
-
             <div class="table-responsive mb-4">
-                <table class="table table-hover table-striped">
+                <table class="table table-bordered ">
                     <thead class="table-dark">
                         <tr>
                             <th style="width: 80px;">S.NO</th>
@@ -65,13 +52,19 @@
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end fw-bold">TOTAL WITH GST:</td>
-                            <td class="text-end fw-bold text-primary">{{ invoice.TOTAL_AMOUNT_WITH_GST }}</td>
+                            <td class="text-end fw-bold ">{{ invoice.TOTAL_AMOUNT_WITH_GST }}</td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end fw-bold">ROUND OFF:</td>
-                            <td class="text-end fw-bold">{{ invoice.ROUND_OFF }}</td>
+                            <td class="text-end fw-bold">
+                                {% if invoice.ROUND_OFF < 0 %}
+                                    (-) {{ invoice.ROUND_OFF|cut:"-" }}
+                                {% else %}
+                                    (+) {{ invoice.ROUND_OFF }}
+                                {% endif %}
+                            </td>
                         </tr>
-                        <tr class="table-success h5">
+                        <tr class="table-success ">
                             <td colspan="4" class="text-end fw-bold">GRAND TOTAL:</td>
                             <td class="text-end fw-bold">₹ {{ invoice.GRAND_TOTAL }}</td>
                         </tr>
@@ -158,7 +151,13 @@
                 </tr>
                 <tr>
                     <td colspan="4" style="padding: 5px 10px; border: 1px solid #000; text-align: right; font-weight: bold;">ROUND OFF</td>
-                    <td style="padding: 5px 10px; border: 1px solid #000; text-align: right; font-weight: bold;">({{ invoice.ROUND_OFF }})</td>
+                    <td style="padding: 5px 10px; border: 1px solid #000; text-align: right; font-weight: bold;">
+                        {% if invoice.ROUND_OFF < 0 %}
+                            (-) {{ invoice.ROUND_OFF|cut:"-" }}
+                        {% else %}
+                            (+) {{ invoice.ROUND_OFF }}
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <td colspan="4" style="padding: 5px 10px; border: 1px solid #000; text-align: right; font-weight: bold; font-size: 16px;">GRAND TOTAL</td>
@@ -212,8 +211,6 @@
         </div>
     </div>
 </div>
-
-
 
 <style>
     @media print {

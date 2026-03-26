@@ -63,6 +63,7 @@ def generate_tax_invoice_docx(invoice):
     for i in range(1, 7):
         c0.merge(row.cells[i])
     add_p(c0, "TAX INVOICE", bold=True, size=20, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=2)
+    c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 2. Invoice No and Date
     row = table.add_row()
@@ -78,6 +79,7 @@ def generate_tax_invoice_docx(invoice):
     
     p_date = add_p(c0, "DATE : ", bold=True, size=11, align=WD_ALIGN_PARAGRAPH.RIGHT)
     p_date.add_run(date_str).font.size = Pt(11)
+    c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 3a. Seller and Bill Titles
     row = table.add_row()
@@ -139,7 +141,7 @@ def generate_tax_invoice_docx(invoice):
     p_bg.add_run("33CKGPK5591Q1ZG").font.size = Pt(11)
     
     for cell in row2.cells:
-        cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 4. Items Header
     row = table.add_row()
@@ -169,6 +171,9 @@ def generate_tax_invoice_docx(invoice):
         add_p(cells[2], str(item.QTY or ""), align=WD_ALIGN_PARAGRAPH.CENTER)
         add_p(cells[3], f"₹ {item.UNIT_PRICE}", align=WD_ALIGN_PARAGRAPH.RIGHT)
         add_p(cells[4], f"₹ {item.TOTAL_VALUE}", align=WD_ALIGN_PARAGRAPH.RIGHT)
+        
+        for cell in row.cells:
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
 
     # 5. Summary Rows
@@ -180,12 +185,18 @@ def generate_tax_invoice_docx(invoice):
             c0.merge(row.cells[i])
         add_p(c0, label, bold=bold, size=size, align=WD_ALIGN_PARAGRAPH.RIGHT)
         add_p(row.cells[6], value, bold=bold, size=size, align=WD_ALIGN_PARAGRAPH.RIGHT)
+        
+        for cell in row.cells:
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     add_summary_row("TOTAL AMOUNT", f"₹ {invoice.TOTAL_AMOUNT}")
     add_summary_row("GST 18%", f"₹ {invoice.GST_18}")
     add_summary_row("TOTAL AMOUNT WITH GST 18%", f"₹ {invoice.TOTAL_AMOUNT_WITH_GST}", bold=True, size=11)
     
-    round_off_val = f"({invoice.ROUND_OFF})" if str(invoice.ROUND_OFF).startswith("-") else str(invoice.ROUND_OFF)
+    val = float(invoice.ROUND_OFF)
+    prefix = "(-)" if val < 0 else "(+)"
+    round_off_val = f"{prefix} {abs(val):.2f}"
+    
     add_summary_row("ROUND OFF", round_off_val)
     add_summary_row("GRAND TOTAL", f"₹ {invoice.GRAND_TOTAL}", bold=True, size=11)
 
@@ -203,8 +214,15 @@ def generate_tax_invoice_docx(invoice):
     run1 = p.add_run("AMOUNT IN WORDS: ")
     run1.bold = True
     run1.font.size = Pt(11)
-    run2 = p.add_run(f"{str(invoice.AMOUNT_IN_WORDS).upper()} ONLY")
+    
+    # Check if words already contains ONLY to avoid double ONLY
+    words = str(invoice.AMOUNT_IN_WORDS).upper().strip()
+    if not words.endswith("ONLY"):
+        words = f"{words} ONLY"
+    
+    run2 = p.add_run(words)
     run2.font.size = Pt(11)
+    c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 7a. Bank Account & Terms Titles
     row = table.add_row()
@@ -220,6 +238,8 @@ def generate_tax_invoice_docx(invoice):
     
     add_p(c0, "BANK ACCOUNT DETAILS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_p(c3, "TERMS & CONDITIONS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    for cell in row.cells:
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 7b. Bank Account & Terms Content
     row_content = table.add_row()
@@ -270,6 +290,9 @@ def generate_tax_invoice_docx(invoice):
         p.paragraph_format.space_after = Pt(6) if idx == len(terms) - 1 else Pt(3)
         p.paragraph_format.left_indent = Inches(0.35)
         p.paragraph_format.first_line_indent = Inches(-0.15)
+        
+    for cell in row_content.cells:
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 8a. Signatures Titles
     row = table.add_row()
@@ -285,6 +308,8 @@ def generate_tax_invoice_docx(invoice):
     add_p(c0, "PREPARED BY", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_p(c2, "SEAL", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_p(c3, "FOR AMIT INDUSTRIAL\nTECHNOLOGIES", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    for cell in row.cells:
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     
     # 8b. Signatures Blanks
     row = table.add_row()
@@ -308,6 +333,7 @@ def generate_tax_invoice_docx(invoice):
     for i in range(1, 7):
         c0.merge(row.cells[i])
     add_p(c0, "AUTHORISED SIGNATORY", bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT, size=11)
+    c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     
     f = io.BytesIO()
     doc.save(f)
