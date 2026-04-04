@@ -7,9 +7,9 @@ from docx.enum.table import WD_ALIGN_VERTICAL
 def generate_tax_invoice_docx(invoice):
     doc = Document()
     
-    # Set narrow margins
+    # Set top margin for letterhead space
     section = doc.sections[0]
-    section.top_margin = Cm(1.27)
+    section.top_margin = Cm(2.27)
     section.bottom_margin = Cm(1.27)
     section.left_margin = Cm(1.27)
     section.right_margin = Cm(1.27)
@@ -31,7 +31,7 @@ def generate_tax_invoice_docx(invoice):
     # Col 4: QTY          (0.5)  } 
     # Col 5: UNIT PRICE   (1.1)  } FOR AMIT = 3+4+5+6 (3.37)
     # Col 6: TOTAL VALUE  (1.17) }
-    widths = [Inches(0.6), Inches(1.4), Inches(1.9), Inches(0.6), Inches(0.5), Inches(1.1), Inches(1.17)]
+    widths = [Inches(0.6), Inches(1.4), Inches(2.2), Inches(0.6), Inches(0.5), Inches(1.1), Inches(0.87)]
     for row in table.rows:
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
@@ -160,6 +160,7 @@ def generate_tax_invoice_docx(invoice):
     items = invoice.items.all()
     for item in items:
         row = table.add_row()
+        row.allow_break_across_pages = False
         _set_widths(row)
         c1 = row.cells[1]
         c1.merge(row.cells[2])
@@ -179,6 +180,7 @@ def generate_tax_invoice_docx(invoice):
     # 5. Summary Rows
     def add_summary_row(label, value, bold=False, size=11):
         row = table.add_row()
+        row.allow_break_across_pages = False
         _set_widths(row)
         c0 = row.cells[0]
         for i in range(1, 6):
@@ -226,6 +228,7 @@ def generate_tax_invoice_docx(invoice):
 
     # 7a. Bank Account & Terms Titles
     row = table.add_row()
+    row.allow_break_across_pages = False
     _set_widths(row)
     c0 = row.cells[0]
     c0.merge(row.cells[1])
@@ -236,8 +239,8 @@ def generate_tax_invoice_docx(invoice):
     c3.merge(row.cells[5])
     c3.merge(row.cells[6])
     
-    add_p(c0, "BANK ACCOUNT DETAILS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-    add_p(c3, "TERMS & CONDITIONS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    add_p(c0, "BANK ACCOUNT DETAILS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER).keep_with_next = True
+    add_p(c3, "TERMS & CONDITIONS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER).keep_with_next = True
     for cell in row.cells:
         cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
@@ -277,6 +280,7 @@ def generate_tax_invoice_docx(invoice):
             p.add_run(f"{key}\t:\t{val}").font.size = Pt(11)
         else:
             p.add_run(f"\t\t{val}").font.size = Pt(11)
+        p.keep_with_next = True
             
     terms = [
         "Goods once sold will not be taken back.",
@@ -285,55 +289,93 @@ def generate_tax_invoice_docx(invoice):
         "Warranty norms as per the product with guide."
     ]
     for idx, term in enumerate(terms):
-        p = add_p(c3_c, f"• {term}", size=11)
+        p = add_p(c3_c, "", size=11, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+        # Add bold bullet with non-breaking space to prevent stretching gap
+        run_bullet = p.add_run("•\u00A0")
+        run_bullet.bold = True
+        run_bullet.font.size = Pt(11)
+        # Add normal text
+        run_text = p.add_run(term)
+        run_text.bold = False
+        run_text.font.size = Pt(11)
+        
         p.paragraph_format.space_before = Pt(6) if idx == 0 else Pt(0)
         p.paragraph_format.space_after = Pt(6) if idx == len(terms) - 1 else Pt(3)
-        p.paragraph_format.left_indent = Inches(0.35)
-        p.paragraph_format.first_line_indent = Inches(-0.15)
+        p.paragraph_format.left_indent = Inches(0.2)  # Text starts at 0.3
+        p.paragraph_format.first_line_indent = Inches(-0.10) # Bullet starts at 0.3 - 0.15 = 0.15 (Matches Account Name)
+        p.keep_with_next = True
         
     for cell in row_content.cells:
-        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
-    # 8a. Signatures Titles
-    row = table.add_row()
-    _set_widths(row)
-    c0 = row.cells[0]
-    c0.merge(row.cells[1])
-    c2 = row.cells[2]
-    c3 = row.cells[3]
-    c3.merge(row.cells[4])
-    c3.merge(row.cells[5])
-    c3.merge(row.cells[6])
+    # 8. Signature Block (Separate Table for atomic grouping)
+    # Creating a new table ensures the signature section stays together and only moves as a whole
+    sig_table = doc.add_table(rows=0, cols=7)
+    sig_table.style = 'Table Grid'
+    sig_table.autofit = False
+    
+    def _set_sig_widths(row):
+        # Total width = 7.27 inches. Synchronized with line 34 for perfect border alignment.
+        widths = [Inches(0.6), Inches(1.4), Inches(2.2), Inches(0.6), Inches(0.5), Inches(1.1), Inches(0.87)]
+        for i, width in enumerate(widths):
+            row.cells[i].width = width
+
+    # Row 8a: Titles
+    row8a = sig_table.add_row()
+    row8a.allow_break_across_pages = False
+    _set_sig_widths(row8a)
+    c0 = row8a.cells[0]
+    c0.merge(row8a.cells[1])
+    c2 = row8a.cells[2]
+    c3 = row8a.cells[3]
+    c3.merge(row8a.cells[4])
+    c3.merge(row8a.cells[5])
+    c3.merge(row8a.cells[6])
     
     add_p(c0, "PREPARED BY", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_p(c2, "SEAL", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_p(c3, "FOR AMIT INDUSTRIAL\nTECHNOLOGIES", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-    for cell in row.cells:
-        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     
-    # 8b. Signatures Blanks
-    row = table.add_row()
-    _set_widths(row)
-    c0 = row.cells[0]
-    c0.merge(row.cells[1])
-    c2 = row.cells[2]
-    c3 = row.cells[3]
-    c3.merge(row.cells[4])
-    c3.merge(row.cells[5])
-    c3.merge(row.cells[6])
+    for cell in row8a.cells:
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        for p in cell.paragraphs:
+            p.paragraph_format.keep_with_next = True
+            p.paragraph_format.keep_together = True
+
+    # Row 8b: Blanks (Fixed height)
+    row8b = sig_table.add_row()
+    row8b.allow_break_across_pages = False
+    row8b.height = Inches(1.2) # Slightly larger height for the blank space
+    _set_sig_widths(row8b)
+    c0 = row8b.cells[0]
+    c0.merge(row8b.cells[1])
+    c2 = row8b.cells[2]
+    c3 = row8b.cells[3]
+    c3.merge(row8b.cells[4])
+    c3.merge(row8b.cells[5])
+    c3.merge(row8b.cells[6])
     
     add_p(c0, "\n\n\n\n\n")
     add_p(c2, "\n\n\n\n\n")
     add_p(c3, "\n\n\n\n\n")
+    
+    for cell in row8b.cells:
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        for p in cell.paragraphs:
+            p.paragraph_format.keep_with_next = True
+            p.paragraph_format.keep_together = True
 
-    # 8c. Signatures Footer
-    row = table.add_row()
-    _set_widths(row)
-    c0 = row.cells[0]
+    # Row 8c: Footer
+    row8c = sig_table.add_row()
+    row8c.allow_break_across_pages = False
+    _set_sig_widths(row8c)
+    c0 = row8c.cells[0]
     for i in range(1, 7):
-        c0.merge(row.cells[i])
+        c0.merge(row8c.cells[i])
     add_p(c0, "AUTHORISED SIGNATORY", bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT, size=11)
     c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    for p in c0.paragraphs:
+        p.paragraph_format.keep_together = True
     
     f = io.BytesIO()
     doc.save(f)
