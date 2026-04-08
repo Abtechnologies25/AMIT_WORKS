@@ -154,7 +154,7 @@ def generate_tax_invoice_docx(invoice):
     c3.merge(row.cells[6])
     
     add_p(c0, "SELLER", bold=True, size=12)
-    add_p(c3, "BILL", bold=True, size=12)
+    add_p(c3, "BUYER", bold=True, size=12)
     # BILL title cell: add left padding
     _set_cell_margins(c3, top=40, start=80, bottom=40, end=80)
     
@@ -358,7 +358,7 @@ def generate_tax_invoice_docx(invoice):
         "Goods once sold will not be taken back.",
         "Delivery Charges should be in the hands of Customer.",
         "Any damages during Transport, report immediately in front of the Driver/ Delivery Person.",
-        "Warranty norms as per the product with guide."
+        "Warranty norms are as per the guidelines."
     ]
     for idx, term in enumerate(terms):
         p = add_p(c3_c, "", size=11, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
