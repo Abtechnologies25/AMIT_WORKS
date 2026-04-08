@@ -106,12 +106,9 @@
             </div>
             <div style="flex: 1; padding: 10px;">
                 <p style="margin: 0; font-weight: bold; font-size: 16px; border-bottom: 1px solid #000; width: 100%; margin-bottom: 5px;">BILL</p>
-                <p style="margin: 0; font-weight: bold;">AB TECHNOLOGIES</p>
-                <p style="margin: 0;">14, First and Second Floor, Prajam Complex,</p>
-                <p style="margin: 0;">S.T. Hindu College Road, Chettikulam, Nagercoil,</p>
-                <p style="margin: 0;">Kanyakumari District, Tamil Nadu, India - 629 002.</p>
-                <p style="margin: 0; font-weight: bold;">Contact: +919789224844</p>
-                <p style="margin: 0; font-weight: bold;">GST : 33CKGPK5591Q1ZG</p>
+                <div style="margin: 0; font-weight: normal; line-height: 1.4;">
+                    {{ invoice.BILL_TO|linebreaksbr }}
+                </div>
             </div>
         </div>
 

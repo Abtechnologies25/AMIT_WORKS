@@ -287,7 +287,7 @@ class CHENNAIPRODUCTBILL(AbstractBill):
         verbose_name_plural = "Chennai Project Bills"
 
 class AbstractTaxInvoice(models.Model):
-    INVOICE_NO = models.CharField(max_length=100)
+    INVOICE_NO = models.CharField(max_length=100, default="AMIT/26-27/")
     DATE = models.DateField()
     BILL_TO = models.TextField(default="""AB TECHNOLOGIES
 14, First and Second Floor, Prajam Complex,

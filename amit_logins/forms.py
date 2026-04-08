@@ -183,12 +183,13 @@ class AbstractTaxInvoiceForm(forms.ModelForm):
 
     class Meta:
         fields = [
-            'INVOICE_NO', 'DATE',
+            'INVOICE_NO', 'DATE', 'BILL_TO',
             'TOTAL_AMOUNT', 'GST_18', 'TOTAL_AMOUNT_WITH_GST', 
             'ROUND_OFF', 'GRAND_TOTAL', 'AMOUNT_IN_WORDS'
         ]
         widgets = {
             'DATE': forms.DateInput(attrs={'type': 'date'}),
+            'BILL_TO': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter Billing Address'}),
             'AMOUNT_IN_WORDS': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Amount in Words'}),
         }
 

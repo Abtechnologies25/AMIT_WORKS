@@ -1865,6 +1865,7 @@ def download_tax_invoice_word(request, branch, invoice_id):
     
     # Construct Word document response
     response = HttpResponse(docx_bytes, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response['Content-Disposition'] = f'attachment; filename="Tax_Invoice_{invoice.INVOICE_NO}.docx"'
+    safe_invoice_no = str(invoice.INVOICE_NO).replace('/', '_')
+    response['Content-Disposition'] = f'attachment; filename="TAX_INVOICE_{safe_invoice_no}.docx"'
     
     return response
