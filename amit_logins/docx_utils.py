@@ -21,7 +21,7 @@ def generate_tax_invoice_docx(invoice):
     style = doc.styles['Normal']
     font = style.font
     font.name = 'Times New Roman'
-    font.size = Pt(11)
+    font.size = Pt(10)
 
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
 
@@ -57,7 +57,7 @@ def generate_tax_invoice_docx(invoice):
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
 
-    def add_p(cell, text, bold=False, size=11, align=None, space_after=0):
+    def add_p(cell, text, bold=False, size=10, align=None, space_after=0):
         if not cell.paragraphs[0].text and len(cell.paragraphs) == 1:
             p = cell.paragraphs[0]
         else:
@@ -126,16 +126,16 @@ def generate_tax_invoice_docx(invoice):
     c_logo_r2.merge(row2_h.cells[1])
     # INVOICE NO: col 2 only (aligns with SELLER boundary)
     c_inv = row2_h.cells[2]
-    p_inv = add_p(c_inv, "INVOICE NO : ", bold=True, size=11, align=WD_ALIGN_PARAGRAPH.RIGHT)
-    p_inv.add_run(str(invoice.INVOICE_NO)).font.size = Pt(11)
+    p_inv = add_p(c_inv, "INVOICE NO : ", bold=True, size=10, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    p_inv.add_run(str(invoice.INVOICE_NO)).font.size = Pt(10)
     c_inv.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     # DATE: cols 3-6 (aligns with BILL boundary)
     c_date = row2_h.cells[3]
     c_date.merge(row2_h.cells[4])
     c_date.merge(row2_h.cells[5])
     c_date.merge(row2_h.cells[6])
-    p_date = add_p(c_date, "DATE : ", bold=True, size=11, align=WD_ALIGN_PARAGRAPH.RIGHT)
-    p_date.add_run(date_str).font.size = Pt(11)
+    p_date = add_p(c_date, "DATE : ", bold=True, size=10, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    p_date.add_run(date_str).font.size = Pt(10)
     c_date.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     # Apply vertical merge so logo spans both rows
     _set_cell_vmerge(c_logo_r1, 'restart')
@@ -153,8 +153,8 @@ def generate_tax_invoice_docx(invoice):
     c3.merge(row.cells[5])
     c3.merge(row.cells[6])
     
-    add_p(c0, "SELLER", bold=True, size=12)
-    add_p(c3, "BUYER", bold=True, size=12)
+    add_p(c0, "SELLER", bold=True, size=11)
+    add_p(c3, "BUYER", bold=True, size=11)
     # BILL title cell: add left padding
     _set_cell_margins(c3, top=40, start=80, bottom=40, end=80)
     
@@ -176,29 +176,29 @@ def generate_tax_invoice_docx(invoice):
     _set_cell_margins(c3_addr, top=40, start=80, bottom=40, end=80)
     
     # Seller
-    add_p(c0_addr, "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES", bold=True, size=11)
-    add_p(c0_addr, "(AMIT) PVT LTD", bold=True, size=11)
-    add_p(c0_addr, "No.7/2, SLB School South Road,", size=11)
-    add_p(c0_addr, "Ramavarmapuram, Nagercoil,", size=11)
-    add_p(c0_addr, "Kanyakumari District,", size=11)
-    add_p(c0_addr, "Tamil Nadu, India - 629 001.", size=11)
+    add_p(c0_addr, "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES", bold=True, size=10)
+    add_p(c0_addr, "(AMIT) PVT LTD", bold=True, size=10)
+    add_p(c0_addr, "No.7/2, SLB School South Road,", size=10)
+    add_p(c0_addr, "Ramavarmapuram, Nagercoil,", size=10)
+    add_p(c0_addr, "Kanyakumari District,", size=10)
+    add_p(c0_addr, "Tamil Nadu, India - 629 001.", size=10)
     
     # Aligned Contact, GST, CIN
     for lbl, val in [("Contact", "+91 9840511458"), ("GST", "33AAYCA9919P1ZK"), ("CIN", "U26517TN2023PTC161676")]:
-        p = add_p(c0_addr, "", size=11)
+        p = add_p(c0_addr, "", size=10)
         p.paragraph_format.tab_stops.add_tab_stop(Inches(0.8))
         p.paragraph_format.tab_stops.add_tab_stop(Inches(0.95))
         
         run_l = p.add_run(lbl)
         run_l.bold = True
-        run_l.font.size = Pt(11)
+        run_l.font.size = Pt(10)
         
         run_c = p.add_run("\t:\t")
         run_c.bold = True
-        run_c.font.size = Pt(11)
+        run_c.font.size = Pt(10)
         
         run_v = p.add_run(val)
-        run_v.font.size = Pt(11)
+        run_v.font.size = Pt(10)
 
     # Bill
     bill_to_text = str(invoice.BILL_TO or "").strip()
@@ -210,7 +210,7 @@ def generate_tax_invoice_docx(invoice):
                 # Make the first line bold (Company Name) if it looks like one, 
                 # or just follow the same pattern as before.
                 is_bold = (idx == 0)
-                add_p(c3_addr, line, bold=is_bold, size=11)
+                add_p(c3_addr, line, bold=is_bold, size=10)
     
     for cell in row2.cells:
         cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
@@ -225,7 +225,7 @@ def generate_tax_invoice_docx(invoice):
     headers = ["S.NO", "DESCRIPTION", "QTY", "UNIT PRICE", "TOTAL VALUE"]
     cells = [row.cells[0], row.cells[1], row.cells[4], row.cells[5], row.cells[6]]
     for idx, text in enumerate(headers):
-        add_p(cells[idx], text, bold=True, size=11, align=WD_ALIGN_PARAGRAPH.CENTER)
+        add_p(cells[idx], text, bold=True, size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
         cells[idx].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # Items Data
@@ -250,7 +250,7 @@ def generate_tax_invoice_docx(invoice):
 
 
     # 5. Summary Rows
-    def add_summary_row(label, value, bold=False, size=11):
+    def add_summary_row(label, value, bold=False, size=10):
         row = table.add_row()
         row.allow_break_across_pages = False
         _set_widths(row)
@@ -265,14 +265,14 @@ def generate_tax_invoice_docx(invoice):
 
     add_summary_row("TOTAL AMOUNT", f"₹ {invoice.TOTAL_AMOUNT}")
     add_summary_row("GST 18%", f"₹ {invoice.GST_18}")
-    add_summary_row("TOTAL AMOUNT WITH GST 18%", f"₹ {invoice.TOTAL_AMOUNT_WITH_GST}", bold=True, size=11)
+    add_summary_row("TOTAL AMOUNT WITH GST 18%", f"₹ {invoice.TOTAL_AMOUNT_WITH_GST}", bold=True, size=10)
     
     val = float(invoice.ROUND_OFF)
     prefix = "(-)" if val < 0 else "(+)"
     round_off_val = f"{prefix} {abs(val):.2f}"
     
     add_summary_row("ROUND OFF", round_off_val)
-    add_summary_row("GRAND TOTAL", f"₹ {invoice.GRAND_TOTAL}", bold=True, size=11)
+    add_summary_row("GRAND TOTAL", f"₹ {invoice.GRAND_TOTAL}", bold=True, size=10)
 
     # 6. Amount in Words
     row = table.add_row()
@@ -287,7 +287,7 @@ def generate_tax_invoice_docx(invoice):
     p.paragraph_format.line_spacing = 1.15
     run1 = p.add_run("AMOUNT IN WORDS: ")
     run1.bold = True
-    run1.font.size = Pt(11)
+    run1.font.size = Pt(10)
     
     # Check if words already contains ONLY to avoid double ONLY
     words = str(invoice.AMOUNT_IN_WORDS).upper().strip()
@@ -295,7 +295,7 @@ def generate_tax_invoice_docx(invoice):
         words = f"{words} ONLY"
     
     run2 = p.add_run(words)
-    run2.font.size = Pt(11)
+    run2.font.size = Pt(10)
     c0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
     # 7a. Bank Account & Terms Titles
@@ -335,13 +335,13 @@ def generate_tax_invoice_docx(invoice):
         ("Bank Name", "CANARA BANK"),
         ("Account Number", "120026789274"),
         ("IFSC", "CNRB0001112"),
-        ("Account Type", "OD"),
+        ("Account Type", "CA"),
         ("Branch", "MEENAKSHIPURAM,"),
         ("", "NAGERCOIL.")
     ]
     
     for idx, (key, val) in enumerate(bank_items):
-        p = add_p(c0_c, "", size=11)
+        p = add_p(c0_c, "", size=10)
         p.paragraph_format.space_before = Pt(6) if idx == 0 else Pt(0)
         p.paragraph_format.space_after = Pt(6) if idx == len(bank_items) - 1 else Pt(0)
         p.paragraph_format.left_indent = Inches(0.15)
@@ -349,9 +349,9 @@ def generate_tax_invoice_docx(invoice):
         p.paragraph_format.tab_stops.add_tab_stop(Inches(1.5))
         p.paragraph_format.tab_stops.add_tab_stop(Inches(1.6))
         if key:
-            p.add_run(f"{key}\t:\t{val}").font.size = Pt(11)
+            p.add_run(f"{key}\t:\t{val}").font.size = Pt(10)
         else:
-            p.add_run(f"\t\t{val}").font.size = Pt(11)
+            p.add_run(f"\t\t{val}").font.size = Pt(10)
         p.keep_with_next = True
             
     terms = [
@@ -361,15 +361,15 @@ def generate_tax_invoice_docx(invoice):
         "Warranty norms are as per the guidelines."
     ]
     for idx, term in enumerate(terms):
-        p = add_p(c3_c, "", size=11, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+        p = add_p(c3_c, "", size=10, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
         # Add bold bullet with non-breaking space to prevent stretching gap
         run_bullet = p.add_run("•\u00A0")
         run_bullet.bold = True
-        run_bullet.font.size = Pt(11)
+        run_bullet.font.size = Pt(10)
         # Add normal text
         run_text = p.add_run(term)
         run_text.bold = False
-        run_text.font.size = Pt(11)
+        run_text.font.size = Pt(10)
         
         p.paragraph_format.space_before = Pt(6) if idx == 0 else Pt(0)
         p.paragraph_format.space_after = Pt(6) if idx == len(terms) - 1 else Pt(3)
@@ -445,7 +445,7 @@ def generate_tax_invoice_docx(invoice):
     c_footer = row8c.cells[0]
     for i in range(1, 7):
         c_footer.merge(row8c.cells[i])
-    add_p(c_footer, "AUTHORISED SIGNATORY", bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT, size=11)
+    add_p(c_footer, "AUTHORISED SIGNATORY", bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT, size=10)
     c_footer.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     for p in c_footer.paragraphs:
         p.paragraph_format.keep_together = True
