@@ -28,6 +28,7 @@ def generate_tax_invoice_docx(invoice):
     # We use a single table with 7 columns for perfect border alignment
     table = doc.add_table(rows=0, cols=7)
     table.style = 'Table Grid'
+    table.autofit = False
 
     # Set table-level cell margins (in twips: 1 inch = 1440 twips)
     tbl = table._tbl
@@ -380,22 +381,13 @@ def generate_tax_invoice_docx(invoice):
     for cell in row_content.cells:
         cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
-    # 8. Signature Block (Separate Table for atomic grouping)
-    # Creating a new table ensures the signature section stays together and only moves as a whole
-    sig_table = doc.add_table(rows=0, cols=7)
-    sig_table.style = 'Table Grid'
-    sig_table.autofit = False
-    
-    def _set_sig_widths(row):
-        # Synchronized with the global widths on line 51 for perfect vertical alignment
-        widths_sig = [Inches(0.3), Inches(1.1), Inches(2.3), Inches(1.1), Inches(0.5), Inches(1.1), Inches(0.87)]
-        for i, width in enumerate(widths_sig):
-            row.cells[i].width = width
+    # 8. Signature Block (Part of the main table for perfect alignment)
+    # The signature section rows use keep_with_next to stay together if possible
 
     # Row 8a: Titles
-    row8a = sig_table.add_row()
+    row8a = table.add_row()
     row8a.allow_break_across_pages = False
-    _set_sig_widths(row8a)
+    _set_widths(row8a)
     c0 = row8a.cells[0]
     c0.merge(row8a.cells[1])
     c2 = row8a.cells[2]
@@ -415,10 +407,10 @@ def generate_tax_invoice_docx(invoice):
             p.paragraph_format.keep_together = True
 
     # Row 8b: Blanks (Fixed height)
-    row8b = sig_table.add_row()
+    row8b = table.add_row()
     row8b.allow_break_across_pages = False
     row8b.height = Inches(1.2) # Slightly larger height for the blank space
-    _set_sig_widths(row8b)
+    _set_widths(row8b)
     c0 = row8b.cells[0]
     c0.merge(row8b.cells[1])
     c2 = row8b.cells[2]
@@ -438,9 +430,9 @@ def generate_tax_invoice_docx(invoice):
             p.paragraph_format.keep_together = True
 
     # Row 8c: Footer (Merged full row)
-    row8c = sig_table.add_row()
+    row8c = table.add_row()
     row8c.allow_break_across_pages = False
-    _set_sig_widths(row8c)
+    _set_widths(row8c)
     # Merge the full row (Cols 0-6)
     c_footer = row8c.cells[0]
     for i in range(1, 7):
