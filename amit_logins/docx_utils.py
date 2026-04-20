@@ -49,7 +49,7 @@ def generate_tax_invoice_docx(invoice):
     # Col 4: QTY          (0.5)  } 
     # Col 5: UNIT PRICE   (1.1)  } FOR AMIT = 3+4+5+6 (3.37)
     # Col 6: TOTAL VALUE  (1.17) }
-    widths = [Inches(0.3), Inches(1.1), Inches(2.3), Inches(1.1), Inches(0.5), Inches(1.1), Inches(0.87)]
+    widths = [Inches(0.5), Inches(1.1), Inches(2.1), Inches(1.1), Inches(0.5), Inches(1.1), Inches(0.87)]
     for row in table.rows:
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
