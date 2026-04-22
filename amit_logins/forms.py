@@ -272,4 +272,30 @@ class ChennaiTaxInvoiceForm(AbstractTaxInvoiceForm):
 
 ChennaiTaxInvoiceItemFormSet = inlineformset_factory(
     CHENNAITAXINVOICE, CHENNAITAXINVOICEITEM, form=AbstractTaxInvoiceItemForm, extra=1, can_delete=True
-)
+)
+
+class AbstractComponentForm(forms.ModelForm):
+    class Meta:
+        fields = ['COMPONENT_CODE', 'COMPONENT_NAME', 'RANGE', 'AVAILABLE_QUANTITY', 'TOTAL_STOCK']
+        widgets = {
+            'COMPONENT_CODE': forms.TextInput(attrs={'class': 'form-control'}),
+            'COMPONENT_NAME': forms.TextInput(attrs={'class': 'form-control'}),
+            'RANGE': forms.TextInput(attrs={'class': 'form-control'}),
+            'AVAILABLE_QUANTITY': forms.NumberInput(attrs={'class': 'form-control'}),
+            'TOTAL_STOCK': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+
+class NagercoilComponentForm(AbstractComponentForm):
+    class Meta(AbstractComponentForm.Meta):
+        model = NagercoilComponent
+
+class StockAdjustmentForm(forms.Form):
+    COMPONENT = forms.ChoiceField(widget=forms.Select(attrs={'class': 'form-control'}))
+    QUANTITY = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+class GlobalComponentForm(forms.Form):
+    COMPONENT_CODE = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Component Code'}))
+    COMPONENT_NAME = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Component Name'}))
+    CATEGORY = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Category (e.g. CAPACITORS)'}))
+    RANGE = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Range'}))

@@ -1,0 +1,86 @@
+{% extends 'logins/base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">BACK TO DASHBOARD</a>
+        <h2 class="text-uppercase" style="font-weight:900; color: white;">CONSOLIDATED COMPONENTS LIST</h2>
+        <div class="gap-2 d-flex">
+            <a href="{% url 'admin_add_component' %}" class="btn btn-primary">ADD NEW COMPONENT</a>
+            <a href="{% url 'admin_component_history' %}" class="btn btn-info text-white">HISTORY</a>
+            <a href="{% url 'download_admin_component_stock_report' %}" class="btn btn-success">DOWNLOAD EXCEL</a>
+        </div>
+    </div>
+
+<style>
+    .table-custom-bordered {
+        border-collapse: collapse !important;
+        border: 1px solid #000 !important;
+    }
+    .table-custom-bordered th, .table-custom-bordered td {
+        border: 1px solid #000 !important;
+    }
+    .table-custom-bordered thead th {
+        background-color: #343a40 !important;
+        color: white !important;
+        border: 1px solid #fff !important; /* White lines in dark header */
+    }
+</style>
+
+    <div class="table-responsive">
+        <table class="table table-custom-bordered text-center align-middle" style="background-color: #FFFFCC;">
+            <thead>
+                <tr>
+                    <th class="align-middle">S NO</th>
+                    <th class="align-middle">COMPONENT CODE</th>
+                    <th class="align-middle">COMPONENT NAME</th>
+                    <th class="align-middle">RANGE</th>
+                    <th class="text-danger" style="font-size: 1.2rem;">AVAILABLE QUANTITY</th>
+                    <th class="align-middle">TOTAL STOCK</th>
+                    <th class="align-middle">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody class="border-dark">
+                {% for group in grouped_components %}
+                {# Category heading row #}
+                <tr>
+                    <td colspan="7" class="text-center fw-bold  " style="color: #cc0000; font-size: 1rem; font-family: 'Bookman Old Style', serif; background-color: #fff8cc;">
+                        {{ group.category }}
+                    </td>
+                </tr>
+                {% for item in group.items %}
+                <tr class=" ">
+                    <td class=" ">{{ item.SNO }}</td>
+                    <td class="text-start">{{ item.CODE }}</td>
+                    <td class="text-start">{{ item.NAME }}</td>
+                    <td class="text-start">{{ item.RANGE }}</td>
+                    <td class=" ">{{ item.AVAILABLE_QUANTITY }}</td>
+                    <td class="  " style="font-weight: bold;">{{ item.TOTAL_STOCK }}</td>
+                    <td class=" ">
+                        <a href="{% url 'admin_edit_component' item.CODE %}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{% url 'admin_delete_component' item.CODE %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this component globally? This will remove it from all branches.');">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% empty %}
+                <tr>
+                    <td colspan="7">No components found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table-bordered th, .table-bordered td {
+        border: 1px solid black !important;
+    }
+    thead th {
+        font-weight: 900;
+    }
+    tbody td {
+        font-family: 'Bookman Old Style', serif;
+    }
+</style>
+{% endblock %}

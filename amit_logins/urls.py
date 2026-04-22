@@ -77,4 +77,18 @@ urlpatterns = [
     path('tax-invoice/view/<str:branch>/<int:invoice_id>/', views.view_tax_invoice, name='view_tax_invoice'),
     path('tax-invoice/download/<str:branch>/<int:invoice_id>/', views.download_tax_invoice_word, name='download_tax_invoice_word'),
 
+   path('components/<str:branch>/download/', views.download_component_stock_report, name='download_component_stock_report'),
+    path('components/<str:branch>/update/<str:action>/', views.update_component_stock, name='update_component_stock'),
+    path('components/<str:branch>/', views.component_list, name='component_list'),
+    path('components/<str:branch>/add/', views.add_component, name='add_component'),
+    path('components/<str:branch>/edit/<int:pk>/', views.edit_component, name='edit_component'),
+    path('components/<str:branch>/delete/<int:pk>/', views.delete_component, name='delete_component'),
+    path('admin-dashboard/components/', views.admin_component_list, name='admin_component_list'),
+    path('admin-dashboard/components/add/', views.admin_add_component, name='admin_add_component'),
+    path('admin-dashboard/components/edit/<str:code>/', views.admin_edit_component, name='admin_edit_component'),
+    path('admin-dashboard/components/delete/<str:code>/', views.admin_delete_component, name='admin_delete_component'),
+    path('admin-dashboard/components/download/', views.download_admin_component_stock_report, name='download_admin_component_stock_report'),
+    path('admin-dashboard/components/history/', views.admin_component_history, name='admin_component_history'),
+    path('admin-dashboard/components/history/export/', views.admin_component_history_export, name='admin_component_history_export'),
+
 ]

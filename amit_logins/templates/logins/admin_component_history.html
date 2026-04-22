@@ -1,0 +1,131 @@
+{% extends 'logins/base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'admin_component_list' %}" class="btn btn-secondary">BACK TO COMPONENT LIST</a>
+        <h2 class="text-uppercase" style="font-weight:900; color: white;">COMPONENT TRANSACTION HISTORY</h2>
+        <div class="d-flex gap-2">
+            <form method="GET" class="d-flex gap-2 align-items-center bg-light p-2 rounded shadow-sm">
+                <select name="month" class="form-select form-select-sm" style="width: 130px;">
+                    <option value="All">All Months</option>
+                    {% for m in month_choices %}
+                    <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+                <select name="year" class="form-select form-select-sm" style="width: 110px;">
+                    <option value="All">All Years</option>
+                    {% for y in year_choices %}
+                    <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">FILTER</button>
+            </form>
+            <a href="{% url 'admin_component_history_export' %}?month={{ selected_month|default:'All' }}&year={{ selected_year|default:'All' }}" 
+               class="btn btn-success fw-bold d-flex align-items-center">
+               <i class="fas fa-file-excel me-2"></i> DOWNLOAD EXCEL
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .history-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #000;
+        }
+        .table-history {
+            background-color: #fff;
+            border-collapse: collapse !important;
+            border: 2px solid #000 !important;
+            width: 100%;
+        }
+        .table-history thead th {
+            background-color: #343a40 !important;
+            color: white !important;
+            font-weight: 900;
+            border: 1px solid #fff !important;
+            text-transform: uppercase;
+            padding: 12px;
+        }
+        .table-history td {
+            font-family: 'Bookman Old Style', serif;
+            border: 1px solid #000 !important;
+            vertical-align: middle;
+            padding: 10px;
+            font-size: 0.95rem;
+        }
+        .badge-added {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .badge-taken {
+            background-color: #dc3545;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .text-branch {
+            font-weight: bold;
+            color: #800080;
+        }
+    </style>
+
+    <div class="history-card">
+        <div class="table-responsive">
+            <table class="table table-history text-center">
+                <thead>
+                    <tr>
+                        <th>S NO</th>
+                        <th>DATE</th>
+                        <th>TIME</th>
+                        <th>BRANCH</th>
+                        <th>COMPONENT CODE</th>
+                        <th>COMPONENT NAME</th>
+                        <th>RANGE</th>
+                        <th>ACTION</th>
+                        <th>QUANTITY</th>
+                        <th>AVAILABLE STOCK</th>
+                        <th>PERFORMED BY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trans in transactions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ trans.timestamp|date:"d-m-Y" }}</td>
+                        <td>{{ trans.timestamp|time:"H:i" }}</td>
+                        <td class="text-branch">{{ trans.branch }}</td>
+                        <td>{{ trans.component_code }}</td>
+                        <td>{{ trans.component_name }}</td>
+                        <td>{{ trans.component_range }}</td>
+                        <td>
+                            {% if trans.action == 'ADDED' %}
+                            <span class="badge-added">ADDED</span>
+                            {% else %}
+                            <span class="badge-taken">TAKEN</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: bold; font-size: 1.1rem;">{{ trans.quantity }}</td>
+                        <td style="font-weight: bold; color: #007bff;">{{ trans.availability }}</td>
+                        <td>{{ trans.user.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center p-4">No transactions recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

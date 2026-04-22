@@ -1,0 +1,43 @@
+{% extends 'logins/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg border-0" style="max-width: 600px; margin: auto; border-radius: 15px;">
+        <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <h3 class="mb-0 text-uppercase" style="font-weight: 900;">EDIT GLOBAL COMPONENT</h3>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted text-center mb-4">Editing component: <strong>{{ code }}</strong>. Changes will apply to <strong>all branches</strong>.</p>
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg fw-bold text-white">UPDATE COMPONENT</button>
+                    <a href="{% url 'admin_component_list' %}" class="btn btn-outline-secondary">CANCEL</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.25);
+    }
+    .card {
+        transition: transform 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

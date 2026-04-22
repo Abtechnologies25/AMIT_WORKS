@@ -11,6 +11,7 @@ class User(AbstractUser):
         # ('TECHNICAL TEAM', 'TECHNICAL TEAM'),
         ('ADMIN TEAM', 'ADMIN TEAM'),
         ('ADMIN-MANAGEMENT WORK TEAM', 'ADMIN-MANAGEMENT WORK TEAM'),
+        ('STOCK MANAGEMENT TEAM', 'STOCK MANAGEMENT TEAM'),
     ]
 
     BRANCH_CHOICES = [
@@ -349,3 +350,55 @@ class CHENNAITAXINVOICE(AbstractTaxInvoice):
 
 class CHENNAITAXINVOICEITEM(AbstractTaxInvoiceItem):
     invoice = models.ForeignKey(CHENNAITAXINVOICE, on_delete=models.CASCADE, related_name='items')
+
+class ComponentCategory(models.Model):
+    NAME = models.CharField(max_length=100, unique=True)
+    CREATED_AT = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.NAME
+
+class AbstractComponent(models.Model):
+    COMPONENT_CODE = models.CharField(max_length=50, unique=True)
+    COMPONENT_NAME = models.CharField(max_length=255)
+    RANGE = models.CharField(max_length=100)
+    CATEGORY = models.CharField(max_length=100, default="OTHERS")
+    AVAILABLE_QUANTITY = models.IntegerField(default=0)
+    TOTAL_STOCK = models.IntegerField(default=0)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"{self.COMPONENT_CODE} - {self.COMPONENT_NAME}"
+
+
+class NagercoilComponent(AbstractComponent):
+    class Meta:
+        verbose_name = "Nagercoil Component"
+        verbose_name_plural = "Nagercoil Components"
+
+
+class ComponentTransaction(models.Model):
+    ACTION_CHOICES = [
+        ('ADDED', 'ADDED'),
+        ('TAKEN', 'TAKEN'),
+    ]
+    
+    component_code = models.CharField(max_length=50)
+    component_name = models.CharField(max_length=255)
+    component_range = models.CharField(max_length=100, default="")
+    branch = models.CharField(max_length=100)
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    quantity = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    availability = models.IntegerField(default=0) # Stock balance after transaction
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Component Transaction"
+        verbose_name_plural = "Component Transactions"
+
+    def __str__(self):
+        return f"{self.branch} - {self.action} - {self.component_code} ({self.quantity}) at {self.timestamp}"

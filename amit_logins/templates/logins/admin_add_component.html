@@ -1,0 +1,97 @@
+{% extends 'logins/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg border-0" style="max-width: 600px; margin: auto; border-radius: 15px;">
+        <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <h3 class="mb-0 text-uppercase" style="font-weight: 900;">ADD NEW GLOBAL COMPONENT</h3>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted text-center mb-4">This component will be added to <strong>all branches</strong> with 0 stock.</p>
+            <form method="post">
+                {% csrf_token %}
+
+                {# Component Code #}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Component Code</label>
+                    {{ form.COMPONENT_CODE }}
+                    {% if form.COMPONENT_CODE.errors %}<div class="text-danger small mt-1">{{ form.COMPONENT_CODE.errors }}</div>{% endif %}
+                </div>
+
+                {# Component Name #}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Component Name</label>
+                    {{ form.COMPONENT_NAME }}
+                    {% if form.COMPONENT_NAME.errors %}<div class="text-danger small mt-1">{{ form.COMPONENT_NAME.errors }}</div>{% endif %}
+                </div>
+
+                {# Category - smart dropdown #}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Category</label>
+                    <select id="categorySelect" class="form-control mb-2" onchange="handleCategoryChange(this)">
+                        <option value="">-- Select Existing Category --</option>
+                        {% for cat in existing_categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                        <option value="__new__">+ Add New Category</option>
+                    </select>
+                    <input type="text" id="categoryInput" name="CATEGORY" class="form-control" placeholder="Enter new category name" style="display:none;">
+                    {% if form.CATEGORY.errors %}<div class="text-danger small mt-1">{{ form.CATEGORY.errors }}</div>{% endif %}
+                </div>
+
+                {# Range #}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Range</label>
+                    {{ form.RANGE }}
+                    {% if form.RANGE.errors %}<div class="text-danger small mt-1">{{ form.RANGE.errors }}</div>{% endif %}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold">CREATE COMPONENT</button>
+                    <a href="{% url 'admin_component_list' %}" class="btn btn-outline-secondary">CANCEL</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.25rem rgba(59,130,246,.25); }
+    .card { transition: transform 0.3s ease; }
+    .card:hover { transform: translateY(-5px); }
+</style>
+
+<script>
+function handleCategoryChange(select) {
+    const input = document.getElementById('categoryInput');
+    if (select.value === '__new__') {
+        input.style.display = 'block';
+        input.required = true;
+        input.value = '';
+        input.focus();
+    } else {
+        input.style.display = 'none';
+        input.required = false;
+        input.value = select.value;
+    }
+}
+
+// On form submit, ensure the hidden input has the right value
+document.querySelector('form').addEventListener('submit', function() {
+    const select = document.getElementById('categorySelect');
+    const input = document.getElementById('categoryInput');
+    if (select.value !== '__new__' && select.value !== '') {
+        input.style.display = 'block';
+        input.value = select.value;
+    }
+});
+
+// Pre-fill input if a category was already set (e.g., on validation error)
+window.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('categoryInput');
+    if (input.value) {
+        input.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

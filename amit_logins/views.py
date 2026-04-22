@@ -29,6 +29,7 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image as XLImage
 import os
+import json
 from django.utils.dateparse import parse_date
 
 def register(request):
@@ -124,6 +125,8 @@ def dashboard(request):
     }    
     if request.user.department == 'ADMIN-MANAGEMENT WORK TEAM':
         template_name = f"logins/incharge_dashboard_{request.user.branch.lower()}.html"
+    elif request.user.department == 'STOCK MANAGEMENT TEAM':
+        template_name = f"logins/stock_management_dashboard_{request.user.branch.lower()}.html"
     else:
         template_name = f"logins/employee_dashboard_{request.user.branch.lower()}.html"
 
@@ -1868,4 +1871,816 @@ def download_tax_invoice_word(request, branch, invoice_id):
     safe_invoice_no = str(invoice.INVOICE_NO).replace('/', '_')
     response['Content-Disposition'] = f'attachment; filename="TAX_INVOICE_{safe_invoice_no}.docx"'
     
-    return response
+    return response
+
+component_model_map = {
+    "NAGERCOIL": NagercoilComponent,
+    # "TIRUNELVELI": TirunelveliComponent,
+    # "PUDUKKOTTAI": PudukottaiComponent,
+    # "CHENNAI": ChennaiComponent,
+    # "AMIT_NAGERCOIL": AMITNagercoilComponent,
+}
+
+component_form_map = {
+    "NAGERCOIL": NagercoilComponentForm,
+    # "TIRUNELVELI": TirunelveliComponentForm,
+    # "PUDUKKOTTAI": PudukottaiComponentForm,
+    # "CHENNAI": ChennaiComponentForm,
+    # "AMIT_NAGERCOIL": AMITNagercoilComponentForm,
+}
+
+@login_required(login_url='login')
+def component_list(request, branch):
+    if branch not in component_model_map:
+        return redirect('dashboard')
+    
+    branch_components = component_model_map[branch].objects.all().order_by('COMPONENT_CODE')
+    
+    results = []
+    for comp in branch_components:
+        # Calculate global sum for TOTAL_STOCK
+        global_total = 0
+        for model in component_model_map.values():
+            global_total += model.objects.filter(COMPONENT_CODE=comp.COMPONENT_CODE).aggregate(total=Sum('TOTAL_STOCK'))['total'] or 0
+            
+        results.append({
+            'pk': comp.pk,
+            'COMPONENT_CODE': comp.COMPONENT_CODE,
+            'COMPONENT_NAME': comp.COMPONENT_NAME,
+            'CATEGORY': comp.CATEGORY,
+            'RANGE': comp.RANGE,
+            'AVAILABLE_QUANTITY': comp.AVAILABLE_QUANTITY,
+            'TOTAL_STOCK': global_total
+        })
+    
+    # Group by category using the persistent model
+    all_categories = ComponentCategory.objects.all().order_by('CREATED_AT')
+    grouped_data = defaultdict(list)
+    for item in results:
+        grouped_data[item['CATEGORY']].append(item)
+    
+    grouped_components = []
+    for cat_obj in all_categories:
+        cat_name = cat_obj.NAME
+        if cat_name in grouped_data or cat_obj.NAME != "OTHERS": # Show even empty except default if empty
+            grouped_components.append({
+                'category': cat_name,
+                'items': sorted(grouped_data.get(cat_name, []), key=lambda x: x['COMPONENT_CODE'])
+            })
+    
+    # Handle any items that might have a category not in our master list (fallback)
+    for cat_name in sorted(grouped_data.keys()):
+        if not all_categories.filter(NAME=cat_name).exists():
+            grouped_components.append({
+                'category': cat_name,
+                'items': sorted(grouped_data[cat_name], key=lambda x: x['COMPONENT_CODE'])
+            })
+
+    # Assign continuous serial numbers across all groups
+    sno = 1
+    for group in grouped_components:
+        for item in group['items']:
+            item['SNO'] = sno
+            sno += 1
+        
+    return render(request, 'logins/component_list.html', {'grouped_components': grouped_components, 'branch': branch})
+
+@login_required(login_url='login')
+def add_component(request, branch):
+    if not request.user.is_superuser:
+        return redirect('login')
+    if branch not in component_form_map:
+        return redirect('dashboard')
+    form_class = component_form_map[branch]
+    if request.method == "POST":
+        form = form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('component_list', branch=branch)
+    else:
+        form = form_class()
+    return render(request, 'logins/add_component.html', {'form': form, 'branch': branch})
+
+@login_required(login_url='login')
+def edit_component(request, branch, pk):
+    if not request.user.is_superuser:
+        return redirect('login')
+    if branch not in component_model_map:
+        return redirect('dashboard')
+    model = component_model_map[branch]
+    form_class = component_form_map[branch]
+    component = get_object_or_404(model, pk=pk)
+    if request.method == "POST":
+        form = form_class(request.POST, instance=component)
+        if form.is_valid():
+            form.save()
+            return redirect('component_list', branch=branch)
+    else:
+        form = form_class(instance=component)
+    return render(request, 'logins/edit_component.html', {'form': form, 'component': component, 'branch': branch})
+
+@login_required(login_url='login')
+def delete_component(request, branch, pk):
+    if not request.user.is_superuser:
+        return redirect('login')
+    if branch not in component_model_map:
+        return redirect('dashboard')
+    model = component_model_map[branch]
+    component = get_object_or_404(model, pk=pk)
+    component.delete()
+    messages.success(request, "Component deleted successfully.")
+    return redirect('component_list', branch=branch)
+
+@login_required(login_url='login')
+def download_component_stock_report(request, branch):
+    if branch not in component_model_map:
+        return HttpResponse("Invalid branch.", status=400)
+        
+    model = component_model_map[branch]
+    components = model.objects.all().order_by('COMPONENT_CODE')
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"{branch.capitalize()} Stock List"
+
+    # Styles
+    thin = Side(border_style="thin", color="000000")
+    border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    font_main = Font(name="Bookman Old Style", size=11)
+    header_font = Font(bold=True, name="Bookman Old Style", size=24)
+    sub_header_font = Font(bold=True, name="Bookman Old Style", size=18, color="FF0000")
+    
+    # Colors
+    blue_fill = PatternFill(start_color="CCEEFF", end_color="CCEEFF", fill_type="solid")
+    green_fill = PatternFill(start_color="CCFFCC", end_color="CCFFCC", fill_type="solid")
+    yellow_fill = PatternFill(start_color="FFFFCC", end_color="FFFFCC", fill_type="solid")
+
+    # Column Widths
+    ws.column_dimensions['A'].width = 13
+    ws.column_dimensions['B'].width = 27
+    ws.column_dimensions['C'].width = 50
+    ws.column_dimensions['D'].width = 30
+    ws.column_dimensions['E'].width = 30
+    ws.column_dimensions['F'].width = 30
+
+    # Row 1 & 2: Logo + AB TECHNOLOGIES
+    ws.row_dimensions[1].height = 50
+    ws.row_dimensions[2].height = 30
+    
+    # Row 1, 2, 3: Logo (A1:B3)
+    ws.merge_cells('A1:B3')
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
+    if os.path.exists(logo_path):
+        try:
+            img = XLImage(logo_path)
+            img.width, img.height = 160, 100 # Adjusted for A1:B3
+            ws.add_image(img, "A1")
+        except:
+            pass
+    
+    # Row 1 & 2: AB TECHNOLOGIES (C1:F2)
+    ws.merge_cells('C1:F2')
+    ws['C1'] = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
+    ws['C1'].font = header_font
+    ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C1'].fill = blue_fill
+    
+    # Row 3: BRANCH SPECIFIC TITLE (C3:F3)
+    ws.merge_cells('C3:F3')
+    current_year = now().year
+    if now().month >= 4:
+        fy_start, fy_end = current_year, current_year + 1
+    else:
+        fy_start, fy_end = current_year - 1, current_year
+    
+    ws['C3'] = f"COMPONENTS STOCK LIST ({branch.upper()}) APR'{fy_start} TO MAR'{fy_end}"
+    ws['C3'].font = sub_header_font
+    ws['C3'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C3'].fill = green_fill
+
+    # Apply borders to the header area rows 1-3
+    for r in range(1, 4):
+        for c in range(1, 7):
+            ws.cell(row=r, column=c).border = border
+
+    # Row 4: Table Headers
+    headers = ["S NO", "COMPONENT CODE", "COMPONENT NAME", "RANGE", "AVAILABLE QUANTITY", "TOTAL STOCK"]
+    ws.row_dimensions[4].height = 35
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=4, column=col_num, value=header)
+        cell.font = Font(bold=True, name="Bookman Old Style", color="800080", size=11)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.fill = yellow_fill
+        cell.border = border
+
+    # Data Rows
+    for idx, comp in enumerate(components, 1):
+        row_num = 4 + idx
+        ws.cell(row=row_num, column=1, value=idx)
+        ws.cell(row=row_num, column=2, value=comp.COMPONENT_CODE)
+        ws.cell(row=row_num, column=3, value=comp.COMPONENT_NAME)
+        ws.cell(row=row_num, column=4, value=comp.RANGE)
+        ws.cell(row=row_num, column=5, value=comp.AVAILABLE_QUANTITY)
+        
+        # Calculate global sum for TOTAL_STOCK
+        global_total = 0
+        for model in component_model_map.values():
+            global_total += model.objects.filter(COMPONENT_CODE=comp.COMPONENT_CODE).aggregate(total=Sum('TOTAL_STOCK'))['total'] or 0
+        ws.cell(row=row_num, column=6, value=global_total)
+        
+        for c in range(1, 7):
+            cell = ws.cell(row=row_num, column=c)
+            cell.border = border
+            cell.font = font_main
+            cell.alignment = Alignment(horizontal="center")
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{branch}_Components_Stock_List.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required(login_url='login')
+def update_component_stock(request, branch, action):
+    if branch not in component_model_map:
+        return redirect('dashboard')
+    
+    model = component_model_map[branch]
+    form = StockAdjustmentForm(request.POST or None)
+    
+    # Populate choices and available stock mapping
+    components = model.objects.all().order_by('COMPONENT_CODE')
+    form.fields['COMPONENT'].choices = [
+        (c.COMPONENT_CODE, f"{c.COMPONENT_CODE} - {c.COMPONENT_NAME}") for c in components
+    ]
+    
+    # Create mapping of component code -> available quantity for this branch
+    stock_mapping = {c.COMPONENT_CODE: c.AVAILABLE_QUANTITY for c in components}
+    
+    if request.method == "POST":
+        if form.is_valid():
+            code = form.cleaned_data['COMPONENT']
+            qty = form.cleaned_data['QUANTITY']
+            instance = get_object_or_404(model, COMPONENT_CODE=code)
+            
+            if action == 'take':
+                if qty > instance.AVAILABLE_QUANTITY:
+                    messages.error(request, f"Cannot take {qty}. Only {instance.AVAILABLE_QUANTITY} available in {branch}.")
+                    return render(request, 'logins/update_stock.html', {
+                        'form': form,
+                        'branch': branch,
+                        'action': action,
+                        'title': 'COMPONENTS TAKEN',
+                        'stock_mapping_json': json.dumps(stock_mapping)
+                    })
+                instance.AVAILABLE_QUANTITY -= qty
+                instance.TOTAL_STOCK -= qty
+                messages.success(request, f"Successfully taken {qty} of {code}.")
+            else:
+                instance.AVAILABLE_QUANTITY += qty
+                instance.TOTAL_STOCK += qty
+                messages.success(request, f"Successfully added {qty} of {code}.")
+            
+            instance.save()
+            
+            # Log the transaction with current availability
+            ComponentTransaction.objects.create(
+                component_code=code,
+                component_name=instance.COMPONENT_NAME,
+                component_range=instance.RANGE,
+                branch=branch,
+                action='TAKEN' if action == 'take' else 'ADDED',
+                quantity=qty,
+                availability=instance.AVAILABLE_QUANTITY,
+                user=request.user
+            )
+            
+            return redirect('component_list', branch=branch)
+            
+    return render(request, 'logins/update_stock.html', {
+        'form': form,
+        'branch': branch,
+        'action': action,
+        'title': 'COMPONENTS TAKEN' if action == 'take' else 'COMPONENTS ADDED',
+        'stock_mapping_json': json.dumps(stock_mapping)
+    })
+
+@login_required(login_url='login')
+def admin_component_list(request):
+    # Collect all unique component codes
+    codes = set()
+    component_data = {}
+    
+    for branch, model in component_model_map.items():
+        for comp in model.objects.all():
+            codes.add(comp.COMPONENT_CODE)
+            if comp.COMPONENT_CODE not in component_data:
+                component_data[comp.COMPONENT_CODE] = {
+                    'NAME': comp.COMPONENT_NAME,
+                    'CATEGORY': comp.CATEGORY,
+                    'RANGE': comp.RANGE,
+                    'QUANTS': defaultdict(int),
+                    'STOCKS': defaultdict(int)
+                }
+            component_data[comp.COMPONENT_CODE]['QUANTS'][branch] = comp.AVAILABLE_QUANTITY
+            component_data[comp.COMPONENT_CODE]['STOCKS'][branch] = comp.TOTAL_STOCK
+
+    sorted_codes = sorted(list(codes))
+    
+    # Pre-calculate data for each code
+    temp_results = {}
+    for code in sorted_codes:
+        item = component_data[code]
+        ngl = item['QUANTS'].get('NAGERCOIL', 0)
+        tvl = item['QUANTS'].get('TIRUNELVELI', 0)
+        ch = item['QUANTS'].get('CHENNAI', 0)
+        pdkt = item['QUANTS'].get('PUDUKKOTTAI', 0)
+        amit_ngl = item['QUANTS'].get('AMIT_NAGERCOIL', 0)
+
+        ngl_s = item['STOCKS'].get('NAGERCOIL', 0)
+        tvl_s = item['STOCKS'].get('TIRUNELVELI', 0)
+        ch_s = item['STOCKS'].get('CHENNAI', 0)
+        pdkt_s = item['STOCKS'].get('PUDUKKOTTAI', 0)
+        amit_ngl_s = item['STOCKS'].get('AMIT_NAGERCOIL', 0)
+
+        total_stock = ngl_s + tvl_s + ch_s + pdkt_s + amit_ngl_s
+        common_qty = ngl + tvl + ch + pdkt + amit_ngl
+        
+        temp_results[code] = {
+            'CODE': code,
+            'NAME': item['NAME'],
+            'CATEGORY': item['CATEGORY'],
+            'RANGE': item['RANGE'],
+            'NGL': ngl,
+            'TVL': tvl,
+            'CH': ch,
+            'PDKT': pdkt,
+            'AMIT_NGL': amit_ngl,
+            'AVAILABLE_QUANTITY': common_qty,
+            'TOTAL_STOCK': total_stock
+        }
+
+    # Group by category using the persistent model
+    all_categories = ComponentCategory.objects.all().order_by('CREATED_AT')
+    grouped_data = defaultdict(list)
+    for code, data in temp_results.items():
+        grouped_data[data['CATEGORY']].append(data)
+    
+    final_results = []
+    for cat_obj in all_categories:
+        cat_name = cat_obj.NAME
+        final_results.append({
+            'category': cat_name,
+            'items': sorted(grouped_data.get(cat_name, []), key=lambda x: x['CODE'])
+        })
+    
+    # Fallback for categories not in the master list
+    for cat_name in sorted(grouped_data.keys()):
+        if not all_categories.filter(NAME=cat_name).exists():
+            final_results.append({
+                'category': cat_name,
+                'items': sorted(grouped_data[cat_name], key=lambda x: x['CODE'])
+            })
+
+    # Assign continuous serial numbers across all groups
+    sno = 1
+    for group in final_results:
+        for item in group['items']:
+            item['SNO'] = sno
+            sno += 1
+
+    return render(request, 'logins/admin_component_list.html', {'grouped_components': final_results})
+
+@login_required(login_url='login')
+def download_admin_component_stock_report(request):
+    # Data aggregation logic for admin components
+    codes = set()
+    component_data = {}
+    for branch, model in component_model_map.items():
+        for comp in model.objects.all():
+            codes.add(comp.COMPONENT_CODE)
+            if comp.COMPONENT_CODE not in component_data:
+                component_data[comp.COMPONENT_CODE] = {
+                    'NAME': comp.COMPONENT_NAME,
+                    'CATEGORY': comp.CATEGORY,
+                    'RANGE': comp.RANGE,
+                    'QUANTS': defaultdict(int),
+                    'STOCKS': defaultdict(int)
+                }
+            component_data[comp.COMPONENT_CODE]['QUANTS'][branch] = comp.AVAILABLE_QUANTITY
+            component_data[comp.COMPONENT_CODE]['STOCKS'][branch] = comp.TOTAL_STOCK
+
+    sorted_codes = sorted(list(codes))
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Components List"
+
+    # Styles
+    thin = Side(border_style="thin", color="000000")
+    border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    font_main = Font(name="Bookman Old Style", size=15)
+    header_font = Font(bold=True, name="Bookman Old Style", size=24)
+    sub_header_font = Font(bold=True, name="Bookman Old Style", size=18, color="FF0000")
+    purple_header_font = Font(bold=True, name="Bookman Old Style", color="800080", size=15)
+    abt_header_font = Font(bold=True, name="Bookman Old Style", color="800080", size=18)
+    red_header_font = Font(bold=True, name="Bookman Old Style", color="FF0000", size=16)
+    
+    # Colors
+    blue_fill = PatternFill(start_color="CCEEFF", end_color="CCEEFF", fill_type="solid")
+    green_fill = PatternFill(start_color="CCFFCC", end_color="CCFFCC", fill_type="solid")
+    yellow_fill = PatternFill(start_color="FFFFCC", end_color="FFFFCC", fill_type="solid")
+
+    # Column Widths
+    widths = [13, 35, 70, 30, 25, 25] # 6 columns
+    for i, w in enumerate(widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+    # Row 1, 2, 3: Logo (A1:B3)
+    ws.merge_cells('A1:B3')
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
+    if os.path.exists(logo_path):
+        try:
+            img = XLImage(logo_path)
+            img.width, img.height = 160, 100
+            ws.add_image(img, "A1")
+        except:
+            pass
+    
+    # Header row heights for logo and title
+    ws.row_dimensions[1].height = 45
+    ws.row_dimensions[2].height = 45
+    ws.row_dimensions[3].height = 40
+    
+    # Row 1 & 2: AB TECHNOLOGIES (C1:F2)
+    ws.merge_cells('C1:F2')
+    ws['C1'] = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
+    ws['C1'].font = header_font
+    ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C1'].fill = blue_fill
+    
+    # Row 3: CONSOLIDATED TITLE (C3:F3)
+    ws.merge_cells('C3:F3')
+    current_year = now().year
+    fy_start, fy_end = (current_year, current_year + 1) if now().month >= 4 else (current_year - 1, current_year)
+    ws['C3'] = f"COMPONENTS STOCK LIST APR'{fy_start} TO MAR'{fy_end}"
+    ws['C3'].font = sub_header_font
+    ws['C3'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C3'].fill = green_fill
+
+    # Table Header heights
+    ws.row_dimensions[4].height = 40
+
+    # Apply borders 1-3
+    for r in range(1, 4):
+        for c in range(1, 7):
+            ws.cell(row=r, column=c).border = border
+
+    # Table Headers
+    ws['A4'] = "S NO"
+    ws['B4'] = "COMPONENT CODE"
+    ws['C4'] = "COMPONENT NAME"
+    ws['D4'] = "RANGE"
+    ws['E4'] = "AVAILABLE QUANTITY"
+    ws['F4'] = "TOTAL STOCK"
+
+    for c in range(1, 7):
+        cell = ws.cell(row=4, column=c)
+        cell.border = border
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.font = purple_header_font
+        cell.fill = yellow_fill
+            
+    # Apply special fonts for specific headers
+    ws['E4'].font = red_header_font     # AVAILABLE QUANTITY
+
+    # Data Rows grouped by Category
+    current_row = 5
+    sno = 1
+    
+    # Get categories in order
+    categories = ComponentCategory.objects.all().order_by('CREATED_AT')
+    
+    # Group the aggregated data
+    grouped_codes = defaultdict(list)
+    for code in sorted_codes:
+        cat = component_data[code]['CATEGORY']
+        grouped_codes[cat].append(code)
+    
+    # Light blue fill for category headers
+    cat_header_fill = PatternFill(start_color="CCEEFF", end_color="CCEEFF", fill_type="solid")
+    cat_header_font = Font(bold=True, color="8B0000", size=15,name="Bookman Old Style") # Reddish like web
+
+    for cat_obj in categories:
+        cat_name = cat_obj.NAME
+        codes_in_cat = grouped_codes.get(cat_name, [])
+        
+        if not codes_in_cat and cat_name == "OTHERS":
+            continue
+            
+        # Add Category Header Row
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=6)
+        cell = ws.cell(row=current_row, column=1, value=cat_name)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.font = cat_header_font
+        cell.fill = cat_header_fill
+        ws.row_dimensions[current_row].height = 25
+        for c in range(1, 7):
+            ws.cell(row=current_row, column=c).border = border
+            
+        current_row += 1
+        
+        # Add components in this category
+        for code in codes_in_cat:
+            item = component_data[code]
+            ws.cell(row=current_row, column=1, value=sno)
+            ws.cell(row=current_row, column=2, value=code)
+            ws.cell(row=current_row, column=3, value=item['NAME'])
+            ws.cell(row=current_row, column=4, value=item['RANGE'])
+            
+            ngl = item['QUANTS'].get('NAGERCOIL', 0)
+            tvl = item['QUANTS'].get('TIRUNELVELI', 0)
+            ch = item['QUANTS'].get('CHENNAI', 0)
+            pdkt = item['QUANTS'].get('PUDUKKOTTAI', 0)
+            amit_ngl = item['QUANTS'].get('AMIT_NAGERCOIL', 0)
+            
+            ngl_s = item['STOCKS'].get('NAGERCOIL', 0)
+            tvl_s = item['STOCKS'].get('TIRUNELVELI', 0)
+            ch_s = item['STOCKS'].get('CHENNAI', 0)
+            pdkt_s = item['STOCKS'].get('PUDUKKOTTAI', 0)
+            amit_ngl_s = item['STOCKS'].get('AMIT_NAGERCOIL', 0)
+            
+            total_stock = ngl_s + tvl_s + ch_s + pdkt_s + amit_ngl_s
+            common_qty = ngl + tvl + ch + pdkt + amit_ngl
+            
+            ws.cell(row=current_row, column=5, value=common_qty)
+            ws.cell(row=current_row, column=6, value=total_stock)
+            
+            for c in range(1, 7):
+                cell = ws.cell(row=current_row, column=c)
+                cell.border = border
+                cell.font = font_main
+                # Left align Code, Name, and Range columns
+                if c in [2, 3, 4]:
+                    cell.alignment = Alignment(horizontal="left", vertical="center")
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+            ws.row_dimensions[current_row].height = 22
+            sno += 1
+            current_row += 1
+
+    
+    leftover_codes = []
+    registered_cats = set(categories.values_list('NAME', flat=True))
+    for code in sorted_codes:
+        if component_data[code]['CATEGORY'] not in registered_cats:
+            leftover_codes.append(code)
+            
+    if leftover_codes:
+        for code in leftover_codes:
+            # (Similar logic for leftover items if any)
+            pass
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="COMPONENT_STOCK.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required(login_url='login')
+def admin_add_component(request):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    # Pull categories from the persistent model
+    existing_categories = ComponentCategory.objects.all().order_by('CREATED_AT').values_list('NAME', flat=True)
+    
+    if request.method == "POST":
+        form = GlobalComponentForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data['COMPONENT_CODE']
+            name = form.cleaned_data['COMPONENT_NAME']
+            category = form.cleaned_data['CATEGORY']
+            range_val = form.cleaned_data['RANGE']
+            
+            # Ensure the category exists in our persistent model
+            ComponentCategory.objects.get_or_create(NAME=category)
+            
+            # Create in all branches
+            for branch, model in component_model_map.items():
+                if not model.objects.filter(COMPONENT_CODE=code).exists():
+                    model.objects.create(
+                        COMPONENT_CODE=code,
+                        COMPONENT_NAME=name,
+                        CATEGORY=category,
+                        RANGE=range_val,
+                        AVAILABLE_QUANTITY=0,
+                        TOTAL_STOCK=0
+                    )
+            messages.success(request, f"Global component {code} added successfully to all branches.")
+            return redirect('admin_component_list')
+    else:
+        form = GlobalComponentForm()
+    
+    return render(request, 'logins/admin_add_component.html', {
+        'form': form,
+        'existing_categories': existing_categories
+    })
+
+@login_required(login_url='login')
+def admin_edit_component(request, code):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    # Get details from any branch that has it
+    sample_instance = None
+    for model in component_model_map.values():
+        sample_instance = model.objects.filter(COMPONENT_CODE=code).first()
+        if sample_instance:
+            break
+            
+    if not sample_instance:
+        return redirect('admin_component_list')
+        
+    if request.method == "POST":
+        form = GlobalComponentForm(request.POST)
+        if form.is_valid():
+            new_code = form.cleaned_data['COMPONENT_CODE']
+            new_name = form.cleaned_data['COMPONENT_NAME']
+            new_category = form.cleaned_data['CATEGORY']
+            new_range = form.cleaned_data['RANGE']
+            
+            # Ensure the category exists in our persistent model
+            ComponentCategory.objects.get_or_create(NAME=new_category)
+            
+            # Update in all branches
+            for model in component_model_map.values():
+                model.objects.filter(COMPONENT_CODE=code).update(
+                    COMPONENT_CODE=new_code,
+                    COMPONENT_NAME=new_name,
+                    CATEGORY=new_category,
+                    RANGE=new_range
+                )
+            messages.success(request, f"Global component {code} updated successfully.")
+            return redirect('admin_component_list')
+    else:
+        form = GlobalComponentForm(initial={
+            'COMPONENT_CODE': sample_instance.COMPONENT_CODE,
+            'COMPONENT_NAME': sample_instance.COMPONENT_NAME,
+            'CATEGORY': sample_instance.CATEGORY,
+            'RANGE': sample_instance.RANGE,
+        })
+    
+    return render(request, 'logins/admin_edit_component.html', {'form': form, 'code': code})
+
+@login_required(login_url='login')
+def admin_delete_component(request, code):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    # Delete from all branches
+    for model in component_model_map.values():
+        model.objects.filter(COMPONENT_CODE=code).delete()
+        
+    messages.success(request, f"Global component {code} deleted from all branches.")
+    return redirect('admin_component_list')
+
+
+@login_required(login_url='login')
+def admin_component_history(request):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    transactions = ComponentTransaction.objects.all().select_related('user')
+    
+    if month and month != 'All':
+        month_idx = {m[1]: i for i, m in enumerate(MONTH_CHOICES, 1)}.get(month)
+        if month_idx:
+            transactions = transactions.filter(timestamp__month=month_idx)
+            
+    if year and year != 'All':
+        transactions = transactions.filter(timestamp__year=year)
+
+    return render(request, 'logins/admin_component_history.html', {
+        'transactions': transactions,
+        'month_choices': [m[1] for m in MONTH_CHOICES],
+        'year_choices': [y[1] for y in YEAR_CHOICES],
+        'selected_month': month,
+        'selected_year': year
+    })
+
+@login_required(login_url='login')
+def admin_component_history_export(request):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    transactions = ComponentTransaction.objects.all().select_related('user').order_by('-timestamp')
+    
+    if month and month != 'All':
+        month_idx = {m[1]: i for i, m in enumerate(MONTH_CHOICES, 1)}.get(month)
+        if month_idx:
+            transactions = transactions.filter(timestamp__month=month_idx)
+            
+    if year and year != 'All':
+        transactions = transactions.filter(timestamp__year=year)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Component History"
+
+    # Styles - Direct sync with consolidated report
+    thin = Side(border_style="thin", color="000000")
+    border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    font_main = Font(name="Bookman Old Style", size=15)
+    header_font = Font(bold=True, name="Bookman Old Style", size=24)
+    sub_header_font = Font(bold=True, name="Bookman Old Style", size=18, color="FF0000")
+    purple_header_font = Font(bold=True, name="Bookman Old Style", color="800080", size=15)
+    
+    blue_fill = PatternFill(start_color="CCEEFF", end_color="CCEEFF", fill_type="solid")
+    green_fill = PatternFill(start_color="CCFFCC", end_color="CCFFCC", fill_type="solid")
+    yellow_fill = PatternFill(start_color="FFFFCC", end_color="FFFFCC", fill_type="solid")
+
+    # Column Widths (11 Columns)
+    widths = [8, 15, 12, 20, 22, 45, 20, 15, 12, 25, 20]
+    for i, w in enumerate(widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+    # Row Heights
+    ws.row_dimensions[1].height = 45
+    ws.row_dimensions[2].height = 45
+    ws.row_dimensions[3].height = 40
+    ws.row_dimensions[4].height = 30 # Table Header row
+
+    # Logo (A1:B3)
+    ws.merge_cells('A1:B3')
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
+    if os.path.exists(logo_path):
+        try:
+            img = XLImage(logo_path)
+            img.width, img.height = 160, 100
+            ws.add_image(img, "A1")
+        except: pass
+
+    # Header: AB TECHNOLOGIES (C1:K2)
+    ws.merge_cells('C1:K2')
+    ws['C1'] = "ATHITH MITHRA INDUSTRIAL TECHNOLOGIES PVT LTD"
+    ws['C1'].font = header_font
+    ws['C1'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C1'].fill = blue_fill
+
+    # Row 3: TITLE (C3:K3)
+    ws.merge_cells('C3:K3')
+    title = "COMPONENT TRANSACTION HISTORY"
+    if month and month != 'All': title += f" ({month.upper()})"
+    if year and year != 'All': title += f" {year}"
+    ws['C3'] = title
+    ws['C3'].font = sub_header_font
+    ws['C3'].alignment = Alignment(horizontal="center", vertical="center")
+    ws['C3'].fill = green_fill
+
+    # Apply borders to Row 1-3
+    for r in range(1, 4):
+        for c in range(1, 12):
+            ws.cell(row=r, column=c).border = border
+
+    # Table Heads (Row 4)
+    headers = ["S NO", "DATE", "TIME", "BRANCH", "CODE", "COMPONENT NAME", "RANGE", "ACTION", "QTY", "AVAILABLE STOCK", "PERFORMED BY"]
+    for i, h in enumerate(headers, 1):
+        cell = ws.cell(row=4, column=i, value=h)
+        cell.font = purple_header_font
+        cell.fill = yellow_fill
+        cell.border = border
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    # Data rows
+    for row_idx, trans in enumerate(transactions, 5):
+        data = [
+            row_idx - 4,
+            trans.timestamp.strftime('%d-%m-%Y'),
+            trans.timestamp.strftime('%H:%M'),
+            trans.branch,
+            trans.component_code,
+            trans.component_name,
+            trans.component_range,
+            trans.action,
+            trans.quantity,
+            trans.availability,
+            trans.user.username
+        ]
+        ws.row_dimensions[row_idx].height = 22
+        for col_idx, value in enumerate(data, 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = font_main
+            cell.border = border
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    filename = f"Component_History_{month or 'All'}_{year or 'All'}.xlsx"
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response

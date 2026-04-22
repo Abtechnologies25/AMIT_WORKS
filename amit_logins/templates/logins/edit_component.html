@@ -1,0 +1,18 @@
+{% extends 'logins/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 card shadow p-4">
+            <h2 class="text-center mb-4 text-uppercase" style="font-weight:900">Edit Component</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning">UPDATE COMPONENT</button>
+                    <a href="{% url 'component_list' branch %}" class="btn btn-secondary">BACK TO LIST</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
